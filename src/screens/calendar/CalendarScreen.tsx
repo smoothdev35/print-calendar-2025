@@ -1,5 +1,5 @@
-import { ForwardRefExoticComponent, RefAttributes, useState } from 'react'
-import { Check, ChevronsUpDown, LucideProps } from 'lucide-react'
+import { useState } from 'react'
+import { Check, ChevronsUpDown } from 'lucide-react'
 import { WEEKDAYS } from '@/constants'
 import { monthsOptions } from '@/lib/utils'
 import {
@@ -123,7 +123,7 @@ const CalendarScreen = () => {
           </Command>
         </PopoverContent>
       </Popover>
-      <article className="p-2 w-[calc(100vw-40px)] max-w-[2000px] rounded-lg shadow-md shadow-[rgba(0,0,0,0.5)]">
+      <article className="p-2 w-[calc(100vw-40px)] min-w-[1720px] max-w-[2000px] rounded-lg shadow-md shadow-[rgba(0,0,0,0.5)]">
         <div className="grid grid-cols-[repeat(7,1fr)] w-full h-[3rem]">
           {/* Weekday headers */}
           {WEEKDAYS.map((day) => (
