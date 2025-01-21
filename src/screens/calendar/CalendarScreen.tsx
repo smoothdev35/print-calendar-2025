@@ -1,29 +1,24 @@
-import { useState } from 'react'
-import { Check, ChevronsUpDown } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { WEEKDAYS } from '@/constants'
 import { monthsOptions } from '@/lib/utils'
 import {
   checkForValidDate,
-  cn,
-  getDaysInMonth,
+  getCleanCalendarDays,
   immutableStateUpdateFactory,
 } from '@/helpers/shared.helpers'
-import { Button } from '@/components/ui/button'
+import { PopoverComponent } from '@/components/shared/PopoverComponent'
 import {
-  Command,
-  CommandGroup,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { useCalendarStore } from '@/store/calendarStore'
 
 interface ICalendarScreenState {
-  open: boolean
-  selectedValue: string
+  addInformationDialogOpen: boolean
+  interactiveCalendarDays: IInteractiveDay[]
+  monthSelectionDropdownOpen: boolean
 }
 
 interface ITextAndIcon {
@@ -31,98 +26,70 @@ interface ITextAndIcon {
   text: string
 }
 
-interface IInteractiveDay {
+export interface IInteractiveDay {
+  activities: ITextAndIcon[]
   date: Date | null
-  activityRowOne?: ITextAndIcon[]
-  activityRowTwo?: ITextAndIcon[]
 }
 
 const CalendarScreen = () => {
+  const { selectedMonth, setSelectedMonth } = useCalendarStore()
+
   const [state, setState] = useState<ICalendarScreenState>({
-    open: false,
-    selectedValue: '0',
+    addInformationDialogOpen: false,
+    interactiveCalendarDays: getCleanCalendarDays(selectedMonth),
+    monthSelectionDropdownOpen: false,
   })
 
-  const { open, selectedValue } = state
+  const {
+    addInformationDialogOpen,
+    interactiveCalendarDays,
+    monthSelectionDropdownOpen,
+  } = state
 
   const updateCalendarState =
     immutableStateUpdateFactory<ICalendarScreenState>(setState)
 
-  const daysInMonth = getDaysInMonth(2025, parseInt(selectedValue))
-  const firstDayIndex = daysInMonth[0].getDay()
-  const lastDayIndex = daysInMonth[daysInMonth.length - 1].getDay()
 
-  const calendarDays = [
-    ...Array(firstDayIndex).fill(null),
-    ...daysInMonth,
-    ...Array(6 - lastDayIndex).fill(null),
-  ]
+    const addDayInformation = (day: Date, activity: ITextAndIcon) => {
+      const selectedDayIndex = interactiveCalendarDays.findIndex(
+        ({ date }) => date?.getTime() === day.getTime()
+      )
+  
+      if (selectedDayIndex === -1) return
+  
+      const newInteractiveCalendarDays = structuredClone(interactiveCalendarDays)
+      newInteractiveCalendarDays[selectedDayIndex].activities.push(activity)
+  
+      updateCalendarState({
+        interactiveCalendarDays: newInteractiveCalendarDays,
+      })
+    }
 
-  const interactiveCalendarDays: IInteractiveDay[] = calendarDays.map(
-    (date) => ({
-      date,
-      activityRowOne: [
-        { emoji: '🎂', text: 'Birthday' },
-        { emoji: '❤️', text: 'Love' },
-      ],
-      activityRowTwo: [
-        { emoji: '🚨', text: 'Important' },
-        { emoji: '🗓️', text: 'Appointment' },
-      ],
+  useEffect(() => {
+    updateCalendarState({
+      interactiveCalendarDays: getCleanCalendarDays(selectedMonth),
     })
-  )
+  }, [selectedMonth])
 
   return (
     <section className="screen calendar gap-0">
-      <Popover
-        open={open}
-        onOpenChange={() => updateCalendarState({ open: !open })}
-      >
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            role="combobox"
-            aria-expanded={open}
-            className="w-[200px] justify-between"
-          >
-            {
-              monthsOptions.find(
-                ({ value: monthValue }) => monthValue === selectedValue
-              )?.label
-            }
-            <ChevronsUpDown className="opacity-50" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-[200px] p-0">
-          <Command>
-            <CommandList>
-              <CommandGroup>
-                {monthsOptions.map(({ label, value }) => (
-                  <CommandItem
-                    key={value}
-                    value={value}
-                    onSelect={(currentValue) => {
-                      updateCalendarState({
-                        open: false,
-                        selectedValue:
-                          currentValue === selectedValue ? '0' : currentValue,
-                      })
-                    }}
-                  >
-                    {label}
-                    <Check
-                      className={cn(
-                        'ml-auto',
-                        value === selectedValue ? 'opacity-100' : 'opacity-0'
-                      )}
-                    />
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
+      <PopoverComponent
+        open={monthSelectionDropdownOpen}
+        options={monthsOptions}
+        selectedValue={selectedMonth}
+        onOpenChange={() =>
+          updateCalendarState({
+            monthSelectionDropdownOpen: !monthSelectionDropdownOpen,
+          })
+        }
+        onSelectValue={(value) => {
+          updateCalendarState({
+            monthSelectionDropdownOpen: false,
+          })
+          setSelectedMonth(value === selectedMonth ? '0' : value)
+        }}
+      />
+
       <article className="p-2 w-[calc(100vw-40px)] min-w-[1720px] max-w-[2000px] rounded-lg shadow-md shadow-[rgba(0,0,0,0.5)]">
         <div className="grid grid-cols-[repeat(7,1fr)] w-full h-[3rem]">
           {/* Weekday headers */}
@@ -137,20 +104,30 @@ const CalendarScreen = () => {
         </div>
         <div className="grid grid-cols-[repeat(7,1fr)] grid-rows-[auto] gap-1 w-full">
           {/* Calendar days */}
-          {interactiveCalendarDays.map(
-            ({ date, activityRowOne, activityRowTwo }) => (
+          {interactiveCalendarDays.map(({ date, activities }) => {
+            const activitiesDeepCopy = structuredClone(activities)
+
+            const activityRowOne = activitiesDeepCopy.slice(0, 2)
+            const activityRowTwo = activitiesDeepCopy.slice(2, 4)
+
+            return (
               <div
                 className={`p-2 border rounded-md border-1 border-[rgba(0,0,0,.25)] aspect-[4/3] ${checkForValidDate(date) ? 'cursor-pointer' : 'bg-gray-100'}`}
+                onClick={() =>
+                  updateCalendarState({
+                    addInformationDialogOpen: !addInformationDialogOpen,
+                  })
+                }
               >
                 {checkForValidDate(date) ? (
                   <article
                     key={
                       checkForValidDate(date) ? date?.getDate() : Math.random()
                     }
-                    className="flex flex-col justify-between h-full "
+                    className="flex flex-col justify-between h-full"
                   >
                     <div className="flex flex-col align-between gap-1">
-                      {activityRowOne && (
+                      {!!activityRowOne.length && (
                         <>
                           {activityRowOne.map(({ emoji, text }) => (
                             <div
@@ -168,7 +145,7 @@ const CalendarScreen = () => {
                       {checkForValidDate(date) ? date?.getDate() : ''}
                     </span>
                     <div className="flex flex-col justify-between gap-1">
-                      {activityRowTwo && (
+                      {!!activityRowTwo.length && (
                         <>
                           {activityRowTwo.map(({ emoji, text }) => (
                             <div
@@ -188,9 +165,24 @@ const CalendarScreen = () => {
                 )}
               </div>
             )
-          )}
+          })}
         </div>
       </article>
+      <Dialog
+        open={addInformationDialogOpen}
+        onOpenChange={() =>
+          updateCalendarState({
+            addInformationDialogOpen: !addInformationDialogOpen,
+          })
+        }
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add information about the event</DialogTitle>
+          </DialogHeader>
+          <article className="info-selection"></article>
+        </DialogContent>
+      </Dialog>
     </section>
   )
 }
