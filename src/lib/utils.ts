@@ -1,4 +1,4 @@
-import { IDropdownOption } from "@/components/shared/PopoverComponent"
+import { IDropdownOption } from "@/components/shared/Dropdown"
 
 export const monthsOptions: IDropdownOption[] = Array.from(
   { length: 12 },

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Check, ChevronsUpDown } from 'lucide-react'
 import { cn } from '@/helpers/shared.helpers'
 import { Button } from '../ui/button'
@@ -9,46 +10,49 @@ export interface IDropdownOption {
   value: string
 }
 
-interface IPopoverProps {
-  open: boolean
+export interface IDropdownProps {
   options: IDropdownOption[]
-  selectedValue: string
-  onOpenChange: () => void
-  onSelectValue: (value: string) => void
+  className?: string
+  placeholder?: string
+  value?: string
+  onChange?: (value: string) => void
 }
 
-const PopoverComponent = ({
+const Dropdown = ({
+  className,
   options,
-  selectedValue,
-  onSelectValue,
-  ...props
-}: IPopoverProps) => {
-  const { open } = props
+  placeholder,
+  value,
+  onChange,
+}: IDropdownProps) => {
+  const [open, setOpen] = useState(false)
 
   return (
-    <Popover {...props}>
+    <Popover open={open} onOpenChange={() => setOpen(!open)}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[200px] justify-between"
+          className={`w-[200px] justify-between ${className ?? ''}`}
         >
-          {options.find(({ value }) => value === selectedValue)?.label}
+          {value
+            ? options.find(({ value: val }) => val === value)?.label
+            : (placeholder ?? 'Select an option')}
           <ChevronsUpDown className="opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0">
+      <PopoverContent className={`w-[200px] p-0 ${className ?? ''}`}>
         <Command>
           <CommandList>
             <CommandGroup>
-              {options.map(({ label, value }) => (
-                <CommandItem key={value} value={value} onSelect={onSelectValue}>
+              {options.map(({ label, value: val }) => (
+                <CommandItem key={val} value={val} onSelect={onChange}>
                   {label}
                   <Check
                     className={cn(
                       'ml-auto',
-                      value === selectedValue ? 'opacity-100' : 'opacity-0'
+                      val === value ? 'opacity-100' : 'opacity-0'
                     )}
                   />
                 </CommandItem>
@@ -61,4 +65,4 @@ const PopoverComponent = ({
   )
 }
 
-export { PopoverComponent }
+export { Dropdown }
