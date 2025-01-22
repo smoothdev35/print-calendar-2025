@@ -1,7 +1,8 @@
 import { Dispatch, SetStateAction } from "react";
+import { Resolver } from "react-hook-form";
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
-import { IInteractiveDay } from "@/screens/calendar/CalendarScreen";
+import { FormErrors, IInteractiveDay } from "@/models/shared.models";
 
 export const cn = (...inputs: ClassValue[]) => {
   return twMerge(clsx(inputs))
@@ -53,3 +54,24 @@ export const getCleanCalendarDays = (selectedMonth: string): IInteractiveDay[] =
     })
   )
 }
+
+/* Using any here because we don't know the shape of the values, and adding a generic type doesn't help,
+  since we're checking for empty values regardless of the type */
+
+  export const customResolver: Resolver<any> = async (values) => {
+    const errors: FormErrors = {}
+  
+    for (const [key, value] of Object.entries(values)) {
+      if (!value) {
+        errors[key] = {
+          type: 'required',
+          message: `${key} is required`,
+        }
+      }
+    }
+  
+    return {
+      values: Object.keys(errors).length ? {} : values,
+      errors,
+    }
+  }
