@@ -1,11 +1,11 @@
 import { useState } from 'react';
 
-interface IUseErrorBoundary {
+type UseErrorBoundary = {
   error: Error | null;
   resetError: () => void;
 }
 
-const useErrorBoundary = (): IUseErrorBoundary => {
+const useErrorBoundary = (): UseErrorBoundary => {
   const [error, setError] = useState<Error | null>(null);
 
   if (error) {

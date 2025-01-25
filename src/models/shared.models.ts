@@ -1,18 +1,27 @@
-interface FieldError {
+import { type MONTHS } from "@/enums/shared.enums"
+
+type FieldError = {
   type: string
   message: string
 }
 
-export interface FormErrors {
+export type FormErrors = {
   [key: string]: FieldError
 }
 
-export interface ITextAndIcon {
+export type TextAndIcon = {
   emoji: string
   text: string
 }
 
-export interface IInteractiveDay {
-  activities: ITextAndIcon[]
+export type InteractiveDay = {
+  activities: TextAndIcon[]
   date: Date | null
 }
+
+export type DropdownOption<TValue extends string = string> = {
+  label: string
+  value: TValue
+}
+
+export type TMonths = (typeof MONTHS)[keyof typeof MONTHS]

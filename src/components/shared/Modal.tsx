@@ -1,7 +1,7 @@
-import { PropsWithChildren } from 'react'
+import { type PropsWithChildren } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog'
 
-interface IModalProps {
+type ModalProps = {
   open: boolean
   title: string
   onOpenChange: () => void
@@ -11,7 +11,7 @@ const Modal = ({
   children,
   title,
   ...props
-}: PropsWithChildren<IModalProps>) => {
+}: PropsWithChildren<ModalProps>) => {
   return (
     <Dialog {...props}>
       <DialogContent>

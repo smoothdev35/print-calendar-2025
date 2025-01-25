@@ -1,31 +1,29 @@
 import { useState } from 'react'
 import { Check, ChevronsUpDown } from 'lucide-react'
+import { type DropdownOption } from '@/models/shared.models'
 import { cn } from '@/helpers/shared.helpers'
 import { Button } from '../ui/button'
 import { Command, CommandGroup, CommandItem, CommandList } from '../ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover'
 
-export interface IDropdownOption {
-  label: string
-  value: string
-}
-
-export interface IDropdownProps {
-  options: IDropdownOption[]
+export interface DropdownProps<TValue extends string = string> {
+  options: DropdownOption<TValue>[]
   className?: string
   placeholder?: string
-  value?: string
-  onChange?: (value: string) => void
+  value?: TValue
+  onChange?: (value: TValue) => void
 }
 
-const Dropdown = ({
+const Dropdown = <TValue extends string>({
   className,
   options,
   placeholder,
   value,
   onChange,
-}: IDropdownProps) => {
+}: DropdownProps<TValue>) => {
   const [open, setOpen] = useState(false)
+
+  const typedOnChange = onChange as (value: string) => void
 
   return (
     <Popover open={open} onOpenChange={() => setOpen(!open)}>
@@ -47,7 +45,7 @@ const Dropdown = ({
           <CommandList>
             <CommandGroup>
               {options.map(({ label, value: val }) => (
-                <CommandItem key={val} value={val} onSelect={onChange}>
+                <CommandItem key={val} value={val} onSelect={typedOnChange}>
                   {label}
                   <Check
                     className={cn(

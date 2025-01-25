@@ -1,67 +1,55 @@
-import { Fragment, useEffect, useState } from 'react'
-import { FieldValues } from 'react-hook-form'
+import { Fragment, useState } from 'react'
+import { type FieldValues } from 'react-hook-form'
 import { WEEKDAYS } from '@/constants'
-import { IInteractiveDay } from '@/models/shared.models'
+import { type TextAndIcon } from '@/models/shared.models'
 import {
   checkForValidDate,
-  getCleanCalendarDays,
   immutableStateUpdateFactory,
 } from '@/helpers/shared.helpers'
 import { useCalendarStore } from '@/store/calendarStore'
-import { AddDayInformationModal } from './AddDayInformationModal'
+import { AddEventModal } from './AddEventModal'
 
-interface ICalendarScreenState {
+type CalendarScreenState = {
   activeDay: Date | null
-  addInformationDialogOpen: boolean
-  interactiveCalendarDays: IInteractiveDay[]
+  addEventDialogOpen: boolean
 }
 
 const InteractiveCalendar = () => {
-  const { selectedMonth } = useCalendarStore()
+  const { selectedMonth, interactiveCalendar, addDayInformation } =
+    useCalendarStore()
 
-  const [state, setState] = useState<ICalendarScreenState>({
+  const interactiveCalendarDays = interactiveCalendar.find(
+    ({ month }) => month === selectedMonth
+  )?.days
+
+  const [state, setState] = useState<CalendarScreenState>({
     activeDay: null,
-    addInformationDialogOpen: false,
-    interactiveCalendarDays: getCleanCalendarDays(selectedMonth),
+    addEventDialogOpen: false,
   })
 
-  const { activeDay, addInformationDialogOpen, interactiveCalendarDays } = state
+  const { activeDay, addEventDialogOpen } = state
 
   const updateCalendarState =
-    immutableStateUpdateFactory<ICalendarScreenState>(setState)
+    immutableStateUpdateFactory<CalendarScreenState>(setState)
 
-  const toggleAddDayInformationDialog = (date: Date | null) => () => {
+  const toggleAddEventDialog = (date: Date | null) => () => {
     updateCalendarState({
-      activeDay: addInformationDialogOpen ? undefined : (date as Date),
-      addInformationDialogOpen: !addInformationDialogOpen,
+      activeDay: addEventDialogOpen ? undefined : (date as Date),
+      addEventDialogOpen: !addEventDialogOpen,
     })
   }
 
-  const addDayInformation = (data: FieldValues) => {
-    const { emoji, text } = data
+  const addEvent = (data: FieldValues) => {
+    const { emoji, text } = data as TextAndIcon
 
-    const selectedDayIndex = interactiveCalendarDays.findIndex(
-      ({ date }) => date?.getTime() === activeDay?.getTime()
-    )
+    if (!activeDay) return
 
-    if (selectedDayIndex === -1) return
+    addDayInformation(activeDay, selectedMonth, { emoji, text })
 
-    const newInteractiveCalendarDays = structuredClone(interactiveCalendarDays)
-    newInteractiveCalendarDays[selectedDayIndex].activities.push({
-      emoji,
-      text,
-    })
-
-    updateCalendarState({
-      interactiveCalendarDays: newInteractiveCalendarDays,
-    })
+    toggleAddEventDialog(null)()
   }
 
-  useEffect(() => {
-    updateCalendarState({
-      interactiveCalendarDays: getCleanCalendarDays(selectedMonth),
-    })
-  }, [selectedMonth])
+  if (!interactiveCalendarDays) return null
 
   return (
     <>
@@ -89,7 +77,7 @@ const InteractiveCalendar = () => {
               <div
                 key={date ? date?.toISOString() : `calendar-cell-${i}`}
                 className={`p-2 border rounded-md border-1 border-[rgba(0,0,0,.25)] aspect-[4/3] ${checkForValidDate(date) ? 'cursor-pointer' : 'bg-gray-100'}`}
-                onClick={toggleAddDayInformationDialog(date)}
+                onClick={toggleAddEventDialog(date)}
               >
                 {checkForValidDate(date) ? (
                   <article
@@ -136,10 +124,10 @@ const InteractiveCalendar = () => {
           })}
         </div>
       </article>
-      <AddDayInformationModal
-        open={addInformationDialogOpen}
-        onOpenChange={toggleAddDayInformationDialog(null)}
-        submitHandler={addDayInformation}
+      <AddEventModal
+        open={addEventDialogOpen}
+        onOpenChange={toggleAddEventDialog(null)}
+        submitHandler={addEvent}
       />
     </>
   )
