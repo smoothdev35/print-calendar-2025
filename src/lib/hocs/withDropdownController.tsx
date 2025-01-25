@@ -1,13 +1,14 @@
-import { Controller } from 'react-hook-form'
-import { IDropdownProps } from '@/components/shared/Dropdown'
+import { type Control, Controller } from 'react-hook-form'
+import { type DropdownProps } from '@/components/shared/Dropdown'
 
-interface IWithDropdownControllerProps extends IDropdownProps {
+interface IWithDropdownControllerProps extends DropdownProps {
   name: string
-  control: any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  control:  Control<any, any>
 }
 
 const withDropdownController = (
-  WrappedComponent: (props: IDropdownProps) => JSX.Element
+  WrappedComponent: (props: DropdownProps) => JSX.Element
 ) => {
   const WithSwitchController = ({
     name,

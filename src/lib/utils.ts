@@ -1,16 +1,16 @@
-import { IDropdownOption } from "@/components/shared/Dropdown"
+import { MONTHS } from "@/enums/shared.enums"
+import { type DropdownOption, type TMonths } from "@/models/shared.models"
 
-export const monthsOptions: IDropdownOption[] = Array.from(
-  { length: 12 },
-  (_, i) => ({
-    value: String(i),
-    label: new Date(2025, i).toLocaleString('default', { month: 'long' }),
-  })
-)
+export const monthsDropdownOptions: DropdownOption<TMonths>[] = Object.entries(MONTHS).map(([key, value]) => ({
+  label: key,
+  value
+}))
 
 const availableEmojis = ['🎂','❤️','🚨','🗓️']
 
-export const emojiOptions: IDropdownOption[] = availableEmojis.map((emoji) => ({
+export const emojisDropdownOptions: DropdownOption[] = availableEmojis.map((emoji) => ({
   value: emoji,
   label: emoji,
 }))
+
+export const currentMonth = String(new Date().getMonth()) as TMonths

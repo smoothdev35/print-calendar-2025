@@ -1,8 +1,8 @@
-import { Dispatch, SetStateAction } from "react";
-import { Resolver } from "react-hook-form";
+import { type Dispatch, type SetStateAction } from "react";
+import { type Resolver } from "react-hook-form";
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
-import { FormErrors, IInteractiveDay } from "@/models/shared.models";
+import { type FormErrors, type InteractiveDay } from "@/models/shared.models";
 
 export const cn = (...inputs: ClassValue[]) => {
   return twMerge(clsx(inputs))
@@ -36,7 +36,7 @@ export const immutableStateUpdateFactory = <TState,>(setState: Dispatch<SetState
     return { ...clonedState, ...newState }
   })
 }
-export const getCleanCalendarDays = (selectedMonth: string): IInteractiveDay[] => {
+export const getCleanCalendarDays = (selectedMonth: string): InteractiveDay[] => {
   const currentYear = new Date().getFullYear()
 
   const daysInMonth = getDaysInMonth(currentYear, parseInt(selectedMonth))
@@ -58,6 +58,7 @@ export const getCleanCalendarDays = (selectedMonth: string): IInteractiveDay[] =
 /* Using any here because we don't know the shape of the values, and adding a generic type doesn't help,
   since we're checking for empty values regardless of the type */
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   export const customResolver: Resolver<any> = async (values) => {
     const errors: FormErrors = {}
   

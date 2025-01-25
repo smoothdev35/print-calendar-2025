@@ -1,28 +1,28 @@
 import { useEffect } from 'react'
-import { FieldValues, useForm } from 'react-hook-form'
-import { ITextAndIcon } from '@/models/shared.models'
+import { type FieldValues, useForm } from 'react-hook-form'
+import { type TextAndIcon } from '@/models/shared.models'
 import { withDropdownController } from '@/lib/hocs/withDropdownController'
-import { emojiOptions } from '@/lib/utils'
+import { emojisDropdownOptions } from '@/lib/utils'
 import { customResolver } from '@/helpers/shared.helpers'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Dropdown } from '../shared/Dropdown'
 import { Modal } from '../shared/Modal'
 
-interface IAddDayInformationModalProps {
+type AddEventModalProps = {
   open: boolean
   onOpenChange: () => void
   submitHandler: (data: FieldValues) => void
 }
 
-type TAddDayActivityForm = ITextAndIcon
+type TAddEventForm = TextAndIcon
 
 const ControlledDropdown = withDropdownController(Dropdown)
 
-const AddDayInformationModal = ({
+const AddEventModal = ({
   submitHandler,
   ...props
-}: IAddDayInformationModalProps) => {
+}: AddEventModalProps) => {
   const { open } = props
 
   const {
@@ -31,7 +31,7 @@ const AddDayInformationModal = ({
     handleSubmit,
     register,
     reset,
-  } = useForm<TAddDayActivityForm>({
+  } = useForm<TAddEventForm>({
     defaultValues: {
       emoji: '🎂',
       text: '',
@@ -40,7 +40,7 @@ const AddDayInformationModal = ({
   })
 
   useEffect(() => {
-    !open && reset()
+    if(!open) reset()
   }, [open, reset])
 
   return (
@@ -49,30 +49,12 @@ const AddDayInformationModal = ({
         className="flex flex-wrap gap-6 mt-4"
         onSubmit={handleSubmit(submitHandler)}
       >
-        {' '}
-        {/* <form
-        className="flex flex-wrap gap-6 mt-4"
-        onSubmit={handleSubmit(addDayInformation)}
-      >
         <div className="flex gap-4 w-full">
           <ControlledDropdown
             className="w-[75px]"
             control={control}
             name="emoji"
-            options={emojiOptions}
-          />
-          <Input {...register('text')} className='w-full' placeholder="Enter text" />
-        </div>
-        <Button type="submit" className="w-full" disabled={!isValid}>
-          Add information
-        </Button>
-      </form> */}
-        <div className="flex gap-4 w-full">
-          <ControlledDropdown
-            className="w-[75px]"
-            control={control}
-            name="emoji"
-            options={emojiOptions}
+            options={emojisDropdownOptions}
           />
           <Input
             {...register('text')}
@@ -88,4 +70,4 @@ const AddDayInformationModal = ({
   )
 }
 
-export { AddDayInformationModal }
+export { AddEventModal }
