@@ -20,9 +20,10 @@ const getDaysInMonth = (year: number, month: number) => {
   return days;
 };
 
-export const checkForValidDate = (date: Date | null) => {
+export const checkForValidDate = (date: string | null) => {
   if (!date) return false
-  return !isNaN(date.getDate())
+  const parsedDate = new Date(date)
+  return !isNaN(parsedDate.getTime())
 }
 
 /* This function is a factory function that returns a function that updates the state of a component in an immutable way.
@@ -49,8 +50,8 @@ export const getCleanCalendarDays = (selectedMonth: string): InteractiveDay[] =>
     ...Array(6 - lastDayIndex).fill(null),
   ].map(
     (date) => ({
-      date,
       activities: [],
+      date: date ? date.toISOString() : null,
     })
   )
 }

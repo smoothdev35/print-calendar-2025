@@ -16,7 +16,7 @@ export type TextAndIcon = {
 
 export type InteractiveDay = {
   activities: TextAndIcon[]
-  date: Date | null
+  date: string | null
 }
 
 export type DropdownOption<TValue extends string = string> = {

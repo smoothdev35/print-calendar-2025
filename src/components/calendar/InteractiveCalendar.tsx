@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react'
+import { useState } from 'react'
 import { type FieldValues } from 'react-hook-form'
 import { WEEKDAYS } from '@/constants'
 import { type TextAndIcon } from '@/models/shared.models'
@@ -10,7 +10,7 @@ import { useCalendarStore } from '@/store/calendarStore'
 import { AddEventModal } from './AddEventModal'
 
 type CalendarScreenState = {
-  activeDay: Date | null
+  activeDay: string | null
   addEventDialogOpen: boolean
 }
 
@@ -32,9 +32,9 @@ const InteractiveCalendar = () => {
   const updateCalendarState =
     immutableStateUpdateFactory<CalendarScreenState>(setState)
 
-  const toggleAddEventDialog = (date: Date | null) => () => {
+  const toggleAddEventDialog = (date: string | null) => () => {
     updateCalendarState({
-      activeDay: addEventDialogOpen ? undefined : (date as Date),
+      activeDay: addEventDialogOpen ? undefined : date,
       addEventDialogOpen: !addEventDialogOpen,
     })
   }
@@ -75,15 +75,14 @@ const InteractiveCalendar = () => {
 
             return (
               <div
-                key={date ? date?.toISOString() : `calendar-cell-${i}`}
+                key={
+                  date ? date : `calendar-cell-${selectedMonth}-${i}`
+                }
                 className={`p-2 border rounded-md border-1 border-[rgba(0,0,0,.25)] aspect-[4/3] ${checkForValidDate(date) ? 'cursor-pointer' : 'bg-gray-100'}`}
                 onClick={toggleAddEventDialog(date)}
               >
                 {checkForValidDate(date) ? (
                   <article
-                    key={
-                      checkForValidDate(date) ? date?.getDate() : Math.random()
-                    }
                     className="flex flex-col justify-between h-full relative"
                   >
                     <div className="flex flex-col justify-start gap-1">
@@ -100,7 +99,7 @@ const InteractiveCalendar = () => {
                       </>
                     </div>
                     <div className="absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] text-center font-semibold">
-                      {checkForValidDate(date) ? date?.getDate() : ''}
+                    {checkForValidDate(date) ? new Date(date as string)?.getDate() : ''}
                     </div>
                     <div className="flex flex-col justify-start gap-1">
                       <>
@@ -117,7 +116,7 @@ const InteractiveCalendar = () => {
                     </div>
                   </article>
                 ) : (
-                  <Fragment key={i}></Fragment>
+                  <></>
                 )}
               </div>
             )
