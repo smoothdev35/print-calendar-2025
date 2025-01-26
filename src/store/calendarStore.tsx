@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 import { MONTHS } from '@/enums/shared.enums'
 import {
   type InteractiveDay,
@@ -19,45 +20,54 @@ type CalendarState = {
   setSelectedMonth: (month: TMonths) => void
   setInteractiveCalendar: (calendar: InteractiveMonth[]) => void
   addDayInformation: (
-    day: Date,
-    month: TMonths,
-    information: TextAndIcon
-  ) => void
-  // updateDayInformation: (day: Date, month: TMonths, information: TextAndIcon) => void
-}
-
-export const useCalendarStore = create<CalendarState>((set) => ({
-  selectedMonth: currentMonth,
-  interactiveCalendar: Object.values(MONTHS).map((month) => ({
-    month,
-    days: getCleanCalendarDays(month),
-  })),
-  setSelectedMonth: (month) => set({ selectedMonth: month }),
-  setInteractiveCalendar: (calendar) => set({ interactiveCalendar: calendar }),
-  addDayInformation: (
-    selectedDate: Date,
+    selectedDate: string,
     selectedMonth: TMonths,
     information: TextAndIcon
-  ) => {
-    set((state) => {
-      const monthIndex = state.interactiveCalendar.findIndex(
-        ({ month }) => month === selectedMonth
-      )
+  ) => void
+}
 
-      if (monthIndex === -1) return state
+export const useCalendarStore = create<CalendarState>()(
+  persist(
+    (set) => ({
+      selectedMonth: currentMonth,
+      interactiveCalendar: Object.values(MONTHS).map((month) => ({
+        month,
+        days: getCleanCalendarDays(month),
+      })),
+      setSelectedMonth: (month) => set({ selectedMonth: month }),
+      setInteractiveCalendar: (calendar) =>
+        set({ interactiveCalendar: calendar }),
+      addDayInformation: (
+        selectedDate: string,
+        selectedMonth: TMonths,
+        information: TextAndIcon
+      ) => {
+        set((state) => {
+          const monthIndex = state.interactiveCalendar.findIndex(
+            ({ month }) => month === selectedMonth
+          )
 
-      const dayIndex = state.interactiveCalendar[monthIndex].days.findIndex(
-        ({ date }) => date?.getTime() === selectedDate.getTime()
-      )
+          if (monthIndex === -1) return state
 
-      if (dayIndex === -1) return state
+          const dayIndex = state.interactiveCalendar[monthIndex].days.findIndex(
+            ({ date }) => {
+              return date === selectedDate
+            }
+          )
 
-      const newInteractiveCalendar = state.interactiveCalendar.slice()
-      newInteractiveCalendar[monthIndex].days[dayIndex].activities.push(
-        information
-      )
+          if (dayIndex === -1) return state
 
-      return { interactiveCalendar: newInteractiveCalendar }
-    })
-  },
-}))
+          const newInteractiveCalendar = state.interactiveCalendar.slice()
+          newInteractiveCalendar[monthIndex].days[dayIndex].activities.push(
+            information
+          )
+
+          return { interactiveCalendar: newInteractiveCalendar }
+        })
+      },
+    }),
+    {
+      name: 'calendar-store',
+    }
+  )
+)
