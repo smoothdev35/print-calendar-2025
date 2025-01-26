@@ -1,12 +1,14 @@
-import { MONTHS } from "@/enums/shared.enums"
-import { type DropdownOption, type TMonths } from "@/models/shared.models"
+import { MONTHS } from '@/enums/shared.enums'
+import { type DropdownOption, type TMonths } from '@/models/shared.models'
 
-export const monthsDropdownOptions: DropdownOption<TMonths>[] = Object.entries(MONTHS).map(([key, value]) => ({
-  label: key,
-  value
-}))
+export const monthsDropdownOptions: DropdownOption<TMonths>[] = Object.entries(MONTHS).map(
+  ([key, value]) => ({
+    label: key,
+    value,
+  })
+)
 
-const availableEmojis = ['🎂','❤️','🚨','🗓️']
+const availableEmojis = ['🎂', '❤️', '🚨', '🗓️']
 
 export const emojisDropdownOptions: DropdownOption[] = availableEmojis.map((emoji) => ({
   value: emoji,

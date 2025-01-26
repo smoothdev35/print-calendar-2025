@@ -1,4 +1,4 @@
-import { type MONTHS } from "@/enums/shared.enums"
+import { type MONTHS } from '@/enums/shared.enums'
 
 type FieldError = {
   type: string

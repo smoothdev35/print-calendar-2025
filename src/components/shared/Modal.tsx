@@ -7,11 +7,7 @@ type ModalProps = {
   onOpenChange: () => void
 }
 
-const Modal = ({
-  children,
-  title,
-  ...props
-}: PropsWithChildren<ModalProps>) => {
+const Modal = ({ children, title, ...props }: PropsWithChildren<ModalProps>) => {
   return (
     <Dialog {...props}>
       <DialogContent>

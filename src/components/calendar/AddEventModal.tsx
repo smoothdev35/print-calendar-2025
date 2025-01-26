@@ -19,10 +19,7 @@ type TAddEventForm = TextAndIcon
 
 const ControlledDropdown = withDropdownController(Dropdown)
 
-const AddEventModal = ({
-  submitHandler,
-  ...props
-}: AddEventModalProps) => {
+const AddEventModal = ({ submitHandler, ...props }: AddEventModalProps) => {
   const { open } = props
 
   const {
@@ -40,15 +37,12 @@ const AddEventModal = ({
   })
 
   useEffect(() => {
-    if(!open) reset()
+    if (!open) reset()
   }, [open, reset])
 
   return (
     <Modal {...props} title="Add information about the event">
-      <form
-        className="flex flex-wrap gap-6 mt-4"
-        onSubmit={handleSubmit(submitHandler)}
-      >
+      <form className="flex flex-wrap gap-6 mt-4" onSubmit={handleSubmit(submitHandler)}>
         <div className="flex gap-4 w-full">
           <ControlledDropdown
             className="w-[75px]"
@@ -56,11 +50,7 @@ const AddEventModal = ({
             name="emoji"
             options={emojisDropdownOptions}
           />
-          <Input
-            {...register('text')}
-            className="w-full"
-            placeholder="Enter text"
-          />
+          <Input {...register('text')} className="w-full" placeholder="Enter text" />
         </div>
         <Button type="submit" className="w-full" disabled={!isValid}>
           Add information
