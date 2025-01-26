@@ -1,11 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { MONTHS } from '@/enums/shared.enums'
-import {
-  type InteractiveDay,
-  type TextAndIcon,
-  type TMonths,
-} from '@/models/shared.models'
+import { type InteractiveDay, type TextAndIcon, type TMonths } from '@/models/shared.models'
 import { getCleanCalendarDays } from '@/helpers/shared.helpers'
 import { currentMonth } from '@/lib/utils'
 
@@ -35,8 +31,7 @@ export const useCalendarStore = create<CalendarState>()(
         days: getCleanCalendarDays(month),
       })),
       setSelectedMonth: (month) => set({ selectedMonth: month }),
-      setInteractiveCalendar: (calendar) =>
-        set({ interactiveCalendar: calendar }),
+      setInteractiveCalendar: (calendar) => set({ interactiveCalendar: calendar }),
       addDayInformation: (
         selectedDate: string,
         selectedMonth: TMonths,
@@ -49,18 +44,14 @@ export const useCalendarStore = create<CalendarState>()(
 
           if (monthIndex === -1) return state
 
-          const dayIndex = state.interactiveCalendar[monthIndex].days.findIndex(
-            ({ date }) => {
-              return date === selectedDate
-            }
-          )
+          const dayIndex = state.interactiveCalendar[monthIndex].days.findIndex(({ date }) => {
+            return date === selectedDate
+          })
 
           if (dayIndex === -1) return state
 
           const newInteractiveCalendar = state.interactiveCalendar.slice()
-          newInteractiveCalendar[monthIndex].days[dayIndex].activities.push(
-            information
-          )
+          newInteractiveCalendar[monthIndex].days[dayIndex].activities.push(information)
 
           return { interactiveCalendar: newInteractiveCalendar }
         })

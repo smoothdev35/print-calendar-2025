@@ -47,12 +47,7 @@ const Dropdown = <TValue extends string>({
               {options.map(({ label, value: val }) => (
                 <CommandItem key={val} value={val} onSelect={typedOnChange}>
                   {label}
-                  <Check
-                    className={cn(
-                      'ml-auto',
-                      val === value ? 'opacity-100' : 'opacity-0'
-                    )}
-                  />
+                  <Check className={cn('ml-auto', val === value ? 'opacity-100' : 'opacity-0')} />
                 </CommandItem>
               ))}
             </CommandGroup>

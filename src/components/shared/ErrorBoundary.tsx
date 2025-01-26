@@ -13,9 +13,7 @@ const ErrorBoundary = ({ children, fallback }: IErrorBoundaryProps) => {
       fallback || (
         <div role="alert">
           <h2>Something went wrong</h2>
-          <details style={{ whiteSpace: 'pre-wrap' }}>
-            {error.toString()}
-          </details>
+          <details style={{ whiteSpace: 'pre-wrap' }}>{error.toString()}</details>
           <button onClick={resetError}>Try again</button>
         </div>
       )
