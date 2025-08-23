@@ -1,5 +1,15 @@
 import { type MONTHS } from '@/enums/shared.enums'
 
+export type Event = {
+  id: string; // Unique identifier for the event
+  title: string;
+  description: string;
+  startTime: string; // ISO string for date and time
+  endTime: string; // ISO string for date and time
+  emoji?: string; // Optional: for visual representation
+  // Optional fields will be added later
+};
+
 type FieldError = {
   type: string
   message: string
@@ -15,7 +25,7 @@ export type TextAndIcon = {
 }
 
 export type InteractiveDay = {
-  activities: TextAndIcon[]
+  events: Event[]
   date: string | null
 }
 
