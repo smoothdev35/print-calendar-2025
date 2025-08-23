@@ -123,3 +123,54 @@ graph TD
     C --> D{setSelectedMonth action called};
     D --> E[InteractiveCalendar re-renders];
 ```
+
+## Supporting Modules
+
+### Data Models
+
+```mermaid
+erDiagram
+    Event {
+        string id
+        string title
+        string description
+        string startTime
+        string endTime
+        string emoji
+    }
+
+    InteractiveDay {
+        string date
+        Event[] events
+    }
+
+    InteractiveDay ||--o{ Event : contains
+```
+
+- `Event`: Represents an event on the calendar.
+- `InteractiveDay`: Represents a day in the calendar, containing a date and a list of events.
+- `DropdownOption`: Represents an option in a dropdown menu.
+- `FormErrors`: Represents the errors in a form.
+- `TextAndIcon`: Represents a text and an icon.
+- `TMonths`: Represents the months of the year.
+
+### Helpers and Utilities
+
+- `cn`: A utility function for conditionally joining class names.
+- `getDaysInMonth`: Returns an array of dates for a given month and year.
+- `checkForValidDate`: Checks if a given date string is a valid date.
+- `immutableStateUpdateFactory`: A factory function that returns a function that updates the state of a component in an immutable way.
+- `getCleanCalendarDays`: Returns an array of `InteractiveDay` objects for a given month.
+- `customResolver`: A custom resolver for `react-hook-form` that validates that all fields are filled.
+- `monthsDropdownOptions`: An array of `DropdownOption` objects for the months of the year.
+- `emojisDropdownOptions`: An array of `DropdownOption` objects for the available emojis.
+- `currentMonth`: The current month as a string.
+
+### Enums
+
+- `APP_ROUTES`: An object containing the routes of the application.
+- `MONTHS`: An object containing the months of the year.
+
+### Higher-Order Components (HOCs)
+
+- `withDropdownController`: A HOC that connects a `Dropdown` component to a `react-hook-form` controller.
