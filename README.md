@@ -5,7 +5,7 @@ This template provides a minimal setup to get React working in Vite with HMR and
 Currently, two official plugins are available:
 
 - [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](httpss://swc.rs/) for Fast Refresh
 
 ## Expanding the ESLint configuration
 
@@ -47,4 +47,79 @@ export default tseslint.config({
     ...react.configs['jsx-runtime'].rules,
   },
 })
+```
+
+## Features
+
+### Event Management
+
+#### Purpose
+
+Allows users to add, view, and delete events on the calendar.
+
+#### Components
+
+- `CalendarScreen.tsx`: The main screen that orchestrates the feature.
+- `InteractiveCalendar.tsx`: The component that displays the calendar grid and the events.
+- `AddEventModal.tsx`: The modal form for adding new events.
+
+#### State Management
+
+- `calendarStore.tsx`: The Zustand store that manages the events data.
+
+#### User Interaction Flow
+
+1.  User clicks on a day in the `InteractiveCalendar`.
+2.  The `AddEventModal` opens.
+3.  User fills in the event details and clicks "Save".
+4.  The `addEvent` action is called in the `calendarStore`.
+5.  The `InteractiveCalendar` re-renders to display the new event.
+6.  User can click on an event to view its details (not yet implemented).
+7.  User can delete an event, which calls the `deleteEvent` action in the `calendarStore`.
+
+#### Flow Diagram
+
+```mermaid
+graph TD
+    A[User clicks on a day] --> B{AddEventModal opens};
+    B --> C{User fills form};
+    C --> D[User clicks "Save"];
+    D --> E{addEvent action called};
+    E --> F[InteractiveCalendar re-renders];
+    G[User clicks on an event] --> H{Event details shown};
+    I[User clicks delete] --> J{deleteEvent action called};
+    J --> F;
+```
+
+### Calendar Navigation
+
+#### Purpose
+
+Allows users to navigate between different months in the calendar.
+
+#### Components
+
+- `CalendarScreen.tsx`: The main screen that orchestrates the feature.
+- `Dropdown.tsx`: The component that displays the month selection dropdown.
+
+#### State Management
+
+- `calendarStore.tsx`: The Zustand store that manages the selected month.
+
+#### User Interaction Flow
+
+1.  User clicks on the month selection dropdown.
+2.  A list of months is displayed.
+3.  User selects a new month.
+4.  The `setSelectedMonth` action is called in the `calendarStore`.
+5.  The `InteractiveCalendar` re-renders to display the events for the selected month.
+
+#### Flow Diagram
+
+```mermaid
+graph TD
+    A[User clicks on month dropdown] --> B{List of months displayed};
+    B --> C{User selects a new month};
+    C --> D{setSelectedMonth action called};
+    D --> E[InteractiveCalendar re-renders];
 ```
