@@ -1,43 +1,43 @@
-import { useState } from 'react';
-import { type FieldValues } from 'react-hook-form';
-import { WEEKDAYS } from '@/constants';
-import { type NewEvent, type TextAndIcon } from '@/models/shared.models';
-import { checkForValidDate, immutableStateUpdateFactory } from '@/helpers/shared.helpers';
-import { useCalendarStore } from '@/store/calendarStore';
-import { AddEventModal } from './AddEventModal';
+import { useState } from 'react'
+import { type FieldValues } from 'react-hook-form'
+import { WEEKDAYS } from '@/constants'
+import { type NewEvent, type TextAndIcon } from '@/models/shared.models'
+import { checkForValidDate, immutableStateUpdateFactory } from '@/helpers/shared.helpers'
+import { useCalendarStore } from '@/store/calendarStore'
+import { AddEventModal } from './AddEventModal'
 
 type CalendarScreenState = {
-  activeDay: string | null;
-  addEventDialogOpen: boolean;
-};
+  activeDay: string | null
+  addEventDialogOpen: boolean
+}
 
 export const InteractiveCalendar = () => {
-  const { selectedMonth, interactiveCalendar, createEvent } = useCalendarStore();
+  const { selectedMonth, interactiveCalendar, createEvent } = useCalendarStore()
 
   const interactiveCalendarDays = interactiveCalendar.find(
     ({ month }) => month === selectedMonth
-  )?.days;
+  )?.days
 
   const [state, setState] = useState<CalendarScreenState>({
     activeDay: null,
     addEventDialogOpen: false,
-  });
+  })
 
-  const { activeDay, addEventDialogOpen } = state;
+  const { activeDay, addEventDialogOpen } = state
 
-  const updateCalendarState = immutableStateUpdateFactory<CalendarScreenState>(setState);
+  const updateCalendarState = immutableStateUpdateFactory<CalendarScreenState>(setState)
 
   const toggleAddEventDialog = (date: string | null) => () => {
     updateCalendarState({
       activeDay: addEventDialogOpen ? undefined : date,
       addEventDialogOpen: !addEventDialogOpen,
-    });
-  };
+    })
+  }
 
   const addEvent = (data: FieldValues) => {
-    const { emoji, text } = data as TextAndIcon;
+    const { emoji, text } = data as TextAndIcon
 
-    if (!activeDay) return;
+    if (!activeDay) return
 
     const newEvent: NewEvent = {
       title: text,
@@ -45,14 +45,14 @@ export const InteractiveCalendar = () => {
       startTime: new Date().toISOString(),
       endTime: new Date().toISOString(),
       emoji,
-    };
+    }
 
-    createEvent(newEvent, activeDay, selectedMonth);
+    createEvent(newEvent, activeDay, selectedMonth)
 
-    toggleAddEventDialog(null)();
-  };
+    toggleAddEventDialog(null)()
+  }
 
-  if (!interactiveCalendarDays) return null;
+  if (!interactiveCalendarDays) return null
 
   return (
     <>
@@ -71,10 +71,10 @@ export const InteractiveCalendar = () => {
         <div className="grid grid-cols-[repeat(7,1fr)] grid-rows-[auto] gap-1 w-full">
           {/* Calendar days */}
           {interactiveCalendarDays.map(({ date, events }, i) => {
-            const eventsDeepCopy = structuredClone(events);
+            const eventsDeepCopy = structuredClone(events)
 
-            const eventRowOne = eventsDeepCopy.slice(0, 2);
-            const eventRowTwo = eventsDeepCopy.slice(2, 4);
+            const eventRowOne = eventsDeepCopy.slice(0, 2)
+            const eventRowTwo = eventsDeepCopy.slice(2, 4)
 
             return (
               <div
@@ -118,7 +118,7 @@ export const InteractiveCalendar = () => {
                   <></>
                 )}
               </div>
-            );
+            )
           })}
         </div>
       </article>
@@ -128,5 +128,5 @@ export const InteractiveCalendar = () => {
         submitHandler={addEvent}
       />
     </>
-  );
-};
+  )
+}

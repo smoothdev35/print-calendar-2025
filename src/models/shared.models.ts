@@ -1,16 +1,16 @@
 import { type MONTHS } from '@/enums/shared.enums'
 
 export type Event = {
-  id: string; // Unique identifier for the event
-  title: string;
-  description: string;
-  startTime: string; // ISO string for date and time
-  endTime: string; // ISO string for date and time
-  emoji?: string; // Optional: for visual representation
+  id: string // Unique identifier for the event
+  title: string
+  description: string
+  startTime: string // ISO string for date and time
+  endTime: string // ISO string for date and time
+  emoji?: string // Optional: for visual representation
   // Optional fields will be added later
-};
+}
 
-export type NewEvent = Omit<Event, 'id'>;
+export type NewEvent = Omit<Event, 'id'>
 
 type FieldError = {
   type: string

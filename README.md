@@ -84,7 +84,7 @@ Allows users to add, view, and delete events on the calendar.
 graph TD
     A[User clicks on a day] --> B{AddEventModal opens};
     B --> C{User fills form};
-    C --> D[User clicks "Save"];
+    C --> D[User clicks 'Save'];
     D --> E{Generate temporary UUID};
     E --> F{Add event to local store};
     F --> G[InteractiveCalendar re-renders];
