@@ -10,6 +10,8 @@ export type Event = {
   // Optional fields will be added later
 };
 
+export type NewEvent = Omit<Event, 'id'>;
+
 type FieldError = {
   type: string
   message: string
