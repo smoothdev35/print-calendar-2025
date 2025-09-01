@@ -1,50 +1,58 @@
-import { useState } from 'react'
-import { type FieldValues } from 'react-hook-form'
-import { WEEKDAYS } from '@/constants'
-import { type TextAndIcon } from '@/models/shared.models'
-import { checkForValidDate, immutableStateUpdateFactory } from '@/helpers/shared.helpers'
-import { useCalendarStore } from '@/store/calendarStore'
-import { AddEventModal } from './AddEventModal'
+import { useState } from 'react';
+import { type FieldValues } from 'react-hook-form';
+import { WEEKDAYS } from '@/constants';
+import { type NewEvent, type TextAndIcon } from '@/models/shared.models';
+import { checkForValidDate, immutableStateUpdateFactory } from '@/helpers/shared.helpers';
+import { useCalendarStore } from '@/store/calendarStore';
+import { AddEventModal } from './AddEventModal';
 
 type CalendarScreenState = {
-  activeDay: string | null
-  addEventDialogOpen: boolean
-}
+  activeDay: string | null;
+  addEventDialogOpen: boolean;
+};
 
-const InteractiveCalendar = () => {
-  const { selectedMonth, interactiveCalendar, addDayInformation } = useCalendarStore()
+export const InteractiveCalendar = () => {
+  const { selectedMonth, interactiveCalendar, createEvent } = useCalendarStore();
 
   const interactiveCalendarDays = interactiveCalendar.find(
     ({ month }) => month === selectedMonth
-  )?.days
+  )?.days;
 
   const [state, setState] = useState<CalendarScreenState>({
     activeDay: null,
     addEventDialogOpen: false,
-  })
+  });
 
-  const { activeDay, addEventDialogOpen } = state
+  const { activeDay, addEventDialogOpen } = state;
 
-  const updateCalendarState = immutableStateUpdateFactory<CalendarScreenState>(setState)
+  const updateCalendarState = immutableStateUpdateFactory<CalendarScreenState>(setState);
 
   const toggleAddEventDialog = (date: string | null) => () => {
     updateCalendarState({
       activeDay: addEventDialogOpen ? undefined : date,
       addEventDialogOpen: !addEventDialogOpen,
-    })
-  }
+    });
+  };
 
   const addEvent = (data: FieldValues) => {
-    const { emoji, text } = data as TextAndIcon
+    const { emoji, text } = data as TextAndIcon;
 
-    if (!activeDay) return
+    if (!activeDay) return;
 
-    addDayInformation(activeDay, selectedMonth, { emoji, text })
+    const newEvent: NewEvent = {
+      title: text,
+      description: '',
+      startTime: new Date().toISOString(),
+      endTime: new Date().toISOString(),
+      emoji,
+    };
 
-    toggleAddEventDialog(null)()
-  }
+    createEvent(newEvent, activeDay, selectedMonth);
 
-  if (!interactiveCalendarDays) return null
+    toggleAddEventDialog(null)();
+  };
+
+  if (!interactiveCalendarDays) return null;
 
   return (
     <>
@@ -62,11 +70,11 @@ const InteractiveCalendar = () => {
         </div>
         <div className="grid grid-cols-[repeat(7,1fr)] grid-rows-[auto] gap-1 w-full">
           {/* Calendar days */}
-          {interactiveCalendarDays.map(({ date, activities }, i) => {
-            const activitiesDeepCopy = structuredClone(activities)
+          {interactiveCalendarDays.map(({ date, events }, i) => {
+            const eventsDeepCopy = structuredClone(events);
 
-            const activityRowOne = activitiesDeepCopy.slice(0, 2)
-            const activityRowTwo = activitiesDeepCopy.slice(2, 4)
+            const eventRowOne = eventsDeepCopy.slice(0, 2);
+            const eventRowTwo = eventsDeepCopy.slice(2, 4);
 
             return (
               <div
@@ -78,13 +86,13 @@ const InteractiveCalendar = () => {
                   <article className="flex flex-col justify-between h-full relative">
                     <div className="flex flex-col justify-start gap-1">
                       <>
-                        {activityRowOne.map(({ emoji, text }, i) => (
+                        {eventRowOne.map(({ emoji, title }, i) => (
                           <div
-                            key={`activity-row-one-${text}-${i}`}
+                            key={`event-row-one-${title}-${i}`}
                             className="flex items-center gap-1 p-1 rounded-md"
                           >
                             <span role="img">{emoji}</span>
-                            <span>{text}</span>
+                            <span>{title}</span>
                           </div>
                         ))}
                       </>
@@ -94,13 +102,13 @@ const InteractiveCalendar = () => {
                     </div>
                     <div className="flex flex-col justify-start gap-1">
                       <>
-                        {activityRowTwo.map(({ emoji, text }, i) => (
+                        {eventRowTwo.map(({ emoji, title }, i) => (
                           <div
-                            key={`activity-row-two-${text}-${i}`}
+                            key={`event-row-two-${title}-${i}`}
                             className="flex items-center gap-1 p-1 rounded-md"
                           >
                             <span role="img">{emoji}</span>
-                            <span>{text}</span>
+                            <span>{title}</span>
                           </div>
                         ))}
                       </>
@@ -110,7 +118,7 @@ const InteractiveCalendar = () => {
                   <></>
                 )}
               </div>
-            )
+            );
           })}
         </div>
       </article>
@@ -120,7 +128,5 @@ const InteractiveCalendar = () => {
         submitHandler={addEvent}
       />
     </>
-  )
-}
-
-export { InteractiveCalendar }
+  );
+};

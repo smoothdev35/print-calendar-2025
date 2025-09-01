@@ -65,17 +65,18 @@ Allows users to add, view, and delete events on the calendar.
 
 #### State Management
 
-- `calendarStore.tsx`: The Zustand store that manages the events data.
+- `calendarStore.tsx`: The Zustand store that manages the events data. It now includes a `createEvent` function that handles the optimistic UI flow.
 
 #### User Interaction Flow
 
 1.  User clicks on a day in the `InteractiveCalendar`.
 2.  The `AddEventModal` opens.
 3.  User fills in the event details and clicks "Save".
-4.  The `addEvent` action is called in the `calendarStore`.
-5.  The `InteractiveCalendar` re-renders to display the new event.
-6.  User can click on an event to view its details (not yet implemented).
-7.  User can delete an event, which calls the `deleteEvent` action in the `calendarStore`.
+4.  A temporary UUID is generated for the new event, and it is immediately added to the local `calendarStore`.
+5.  The `InteractiveCalendar` re-renders to display the new event (optimistic UI).
+6.  In the background, a `POST` request is sent to the server to save the event to the database.
+7.  Once the server responds with the permanent event data (including the database-generated `id`), the local `calendarStore` is updated with the permanent data.
+8.  If the server request fails, the temporary event is removed from the `calendarStore` and an error is displayed.
 
 #### Flow Diagram
 
@@ -84,11 +85,15 @@ graph TD
     A[User clicks on a day] --> B{AddEventModal opens};
     B --> C{User fills form};
     C --> D[User clicks "Save"];
-    D --> E{addEvent action called};
-    E --> F[InteractiveCalendar re-renders];
-    G[User clicks on an event] --> H{Event details shown};
-    I[User clicks delete] --> J{deleteEvent action called};
-    J --> F;
+    D --> E{Generate temporary UUID};
+    E --> F{Add event to local store};
+    F --> G[InteractiveCalendar re-renders];
+    F --> H{Send POST request to server};
+    H --> I{Server saves event};
+    I --> J{Server responds with permanent event};
+    J --> K{Update local store with permanent event};
+    H --> L{Handle server error};
+    L --> M{Remove temporary event from local store};
 ```
 
 ### Calendar Navigation
@@ -139,6 +144,14 @@ erDiagram
         string emoji
     }
 
+    NewEvent {
+        string title
+        string description
+        string startTime
+        string endTime
+        string emoji
+    }
+
     InteractiveDay {
         string date
         Event[] events
@@ -148,11 +161,16 @@ erDiagram
 ```
 
 - `Event`: Represents an event on the calendar.
+- `NewEvent`: Represents a new event that has not yet been saved to the database.
 - `InteractiveDay`: Represents a day in the calendar, containing a date and a list of events.
 - `DropdownOption`: Represents an option in a dropdown menu.
 - `FormErrors`: Represents the errors in a form.
 - `TextAndIcon`: Represents a text and an icon.
 - `TMonths`: Represents the months of the year.
+
+### Services
+
+- `eventService.ts`: A service that handles all API calls related to events.
 
 ### Helpers and Utilities
 
