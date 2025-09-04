@@ -1,9 +1,10 @@
 import { useEffect } from 'react'
 import { type FieldValues, useForm } from 'react-hook-form'
-import { type TextAndIcon } from '@/models/shared.models'
+import { type TextAndIcon, type NewEvent } from '@/models/shared.models'
 import { withDropdownController } from '@/lib/hocs/withDropdownController'
 import { emojisDropdownOptions } from '@/lib/utils'
 import { customResolver } from '@/helpers/shared.helpers'
+import { useOptimisticEventCreation } from '@/hooks/useOptimisticEventCreation'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Dropdown } from '../shared/Dropdown'
@@ -12,29 +13,43 @@ import { Modal } from '../shared/Modal'
 type AddEventModalProps = {
   open: boolean
   onOpenChange: () => void
-  submitHandler: (data: FieldValues) => void
+  activeDay: string | null
 }
 
 type TAddEventForm = TextAndIcon
 
 const ControlledDropdown = withDropdownController(Dropdown)
 
-const AddEventModal = ({ submitHandler, ...props }: AddEventModalProps) => {
-  const { open } = props
+const AddEventModal = ({ activeDay, ...props }: AddEventModalProps) => {
+  const { open, onOpenChange } = props
+  const { createEvent } = useOptimisticEventCreation()
 
-  const {
-    control,
-    formState: { isValid },
-    handleSubmit,
-    register,
-    reset,
-  } = useForm<TAddEventForm>({
+  const { control, formState, handleSubmit, register, reset } = useForm<TAddEventForm>({
     defaultValues: {
       emoji: '🎂',
       text: '',
     },
     resolver: customResolver,
   })
+
+  const { isValid } = formState
+
+  const submitHandler = (data: FieldValues) => {
+    const { emoji, text } = data as TextAndIcon
+
+    if (!activeDay) return
+
+    const newEvent: NewEvent = {
+      title: text,
+      description: '',
+      startTime: new Date(activeDay).toISOString(),
+      endTime: new Date(activeDay).toISOString(),
+      emoji,
+    }
+
+    createEvent(newEvent)
+    onOpenChange()
+  }
 
   useEffect(() => {
     if (!open) reset()

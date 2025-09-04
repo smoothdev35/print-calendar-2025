@@ -1,8 +1,10 @@
 import { useState } from 'react'
-import { type FieldValues } from 'react-hook-form'
 import { WEEKDAYS } from '@/constants'
-import { type NewEvent, type TextAndIcon } from '@/models/shared.models'
-import { checkForValidDate, immutableStateUpdateFactory } from '@/helpers/shared.helpers'
+import {
+  checkForValidDate,
+  immutableStateUpdateFactory,
+  getCleanCalendarDays,
+} from '@/helpers/shared.helpers'
 import { useCalendarStore } from '@/store/calendarStore'
 import { AddEventModal } from './AddEventModal'
 
@@ -12,11 +14,20 @@ type CalendarScreenState = {
 }
 
 export const InteractiveCalendar = () => {
-  const { selectedMonth, interactiveCalendar, createEvent } = useCalendarStore()
+  const { selectedMonth, events } = useCalendarStore()
 
-  const interactiveCalendarDays = interactiveCalendar.find(
-    ({ month }) => month === selectedMonth
-  )?.days
+  const interactiveCalendarDays = getCleanCalendarDays(selectedMonth).map((day) => ({
+    ...day,
+    events: events.filter((event) => {
+      const eventDate = new Date(event.startTime)
+      const dayDate = new Date(day.date as string)
+      return (
+        eventDate.getDate() === dayDate.getDate() &&
+        eventDate.getMonth() === dayDate.getMonth() &&
+        eventDate.getFullYear() === dayDate.getFullYear()
+      )
+    }),
+  }))
 
   const [state, setState] = useState<CalendarScreenState>({
     activeDay: null,
@@ -29,27 +40,9 @@ export const InteractiveCalendar = () => {
 
   const toggleAddEventDialog = (date: string | null) => () => {
     updateCalendarState({
-      activeDay: addEventDialogOpen ? undefined : date,
+      activeDay: addEventDialogOpen ? null : date,
       addEventDialogOpen: !addEventDialogOpen,
     })
-  }
-
-  const addEvent = (data: FieldValues) => {
-    const { emoji, text } = data as TextAndIcon
-
-    if (!activeDay) return
-
-    const newEvent: NewEvent = {
-      title: text,
-      description: '',
-      startTime: new Date().toISOString(),
-      endTime: new Date().toISOString(),
-      emoji,
-    }
-
-    createEvent(newEvent, activeDay, selectedMonth)
-
-    toggleAddEventDialog(null)()
   }
 
   if (!interactiveCalendarDays) return null
@@ -79,7 +72,9 @@ export const InteractiveCalendar = () => {
             return (
               <div
                 key={date ? date : `calendar-cell-${selectedMonth}-${i}`}
-                className={`p-2 border rounded-md border-1 border-[rgba(0,0,0,.25)] aspect-[4/3] ${checkForValidDate(date) ? 'cursor-pointer' : 'bg-gray-100'}`}
+                className={`p-2 border rounded-md border-1 border-[rgba(0,0,0,.25)] aspect-[4/3] ${
+                  checkForValidDate(date) ? 'cursor-pointer' : 'bg-gray-100'
+                }`}
                 onClick={toggleAddEventDialog(date)}
               >
                 {checkForValidDate(date) ? (
@@ -125,7 +120,7 @@ export const InteractiveCalendar = () => {
       <AddEventModal
         open={addEventDialogOpen}
         onOpenChange={toggleAddEventDialog(null)}
-        submitHandler={addEvent}
+        activeDay={activeDay}
       />
     </>
   )
