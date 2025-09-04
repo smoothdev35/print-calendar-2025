@@ -16,14 +16,13 @@ export const snakeToCamelCase = <T extends object, U extends object>(obj: T): U 
   return newObj as U
 }
 
-
 export const getBaseFetchHeaders = () => {
   return {
     headers: {
-      'apikey': import.meta.env.VITE_API_KEY,
-      'Authorization': `Bearer ${import.meta.env.VITE_API_KEY}`,
+      apikey: import.meta.env.VITE_API_KEY,
+      Authorization: `Bearer ${import.meta.env.VITE_API_KEY}`,
       'Content-Type': 'application/json',
-      'Prefer': 'return=representation',
+      Prefer: 'return=representation',
     },
   }
 }
