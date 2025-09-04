@@ -67,16 +67,21 @@ Allows users to add, view, and delete events on the calendar.
 
 - `calendarStore.tsx`: The Zustand store that manages the events data. It now includes a `createEvent` function that handles the optimistic UI flow.
 
+#### Custom Hooks
+
+- `useOptimisticEventCreation.ts`: A custom hook that encapsulates the logic for optimistic event creation.
+
 #### User Interaction Flow
 
 1.  User clicks on a day in the `InteractiveCalendar`.
 2.  The `AddEventModal` opens.
 3.  User fills in the event details and clicks "Save".
-4.  A temporary UUID is generated for the new event, and it is immediately added to the local `calendarStore`.
-5.  The `InteractiveCalendar` re-renders to display the new event (optimistic UI).
-6.  In the background, a `POST` request is sent to the server to save the event to the database.
-7.  Once the server responds with the permanent event data (including the database-generated `id`), the local `calendarStore` is updated with the permanent data.
-8.  If the server request fails, the temporary event is removed from the `calendarStore` and an error is displayed.
+4.  The `useOptimisticEventCreation` hook is called.
+5.  A temporary UUID is generated for the new event, and it is immediately added to the local `calendarStore`.
+6.  The `InteractiveCalendar` re-renders to display the new event (optimistic UI).
+7.  In the background, a `POST` request is sent to the server to save the event to the database.
+8.  Once the server responds with the permanent event data (including the database-generated `id`), the local `calendarStore` is updated with the permanent data.
+9.  If the server request fails, the temporary event is removed from the `calendarStore` and an error is displayed.
 
 #### Flow Diagram
 
@@ -85,15 +90,16 @@ graph TD
     A[User clicks on a day] --> B{AddEventModal opens};
     B --> C{User fills form};
     C --> D[User clicks 'Save'];
-    D --> E{Generate temporary UUID};
-    E --> F{Add event to local store};
-    F --> G[InteractiveCalendar re-renders];
-    F --> H{Send POST request to server};
-    H --> I{Server saves event};
-    I --> J{Server responds with permanent event};
-    J --> K{Update local store with permanent event};
-    H --> L{Handle server error};
-    L --> M{Remove temporary event from local store};
+    D --> E{useOptimisticEventCreation hook called};
+    E --> F{Generate temporary UUID};
+    F --> G{Add event to local store};
+    G --> H[InteractiveCalendar re-renders];
+    G --> I{Send POST request to server};
+    I --> J{Server saves event};
+    J --> K{Server responds with permanent event};
+    K --> L{Update local store with permanent event};
+    I --> M{Handle server error};
+    M --> N{Remove temporary event from local store};
 ```
 
 ### Calendar Navigation
@@ -142,6 +148,7 @@ erDiagram
         string startTime
         string endTime
         string emoji
+        date date
     }
 
     NewEvent {
@@ -149,6 +156,14 @@ erDiagram
         string description
         string startTime
         string endTime
+        string emoji
+    }
+
+    NewEventRequest {
+        string title
+        string description
+        string start_time
+        string end_time
         string emoji
     }
 
@@ -162,6 +177,7 @@ erDiagram
 
 - `Event`: Represents an event on the calendar.
 - `NewEvent`: Represents a new event that has not yet been saved to the database.
+- `NewEventRequest`: Represents the payload for creating a new event, with snake_case properties.
 - `InteractiveDay`: Represents a day in the calendar, containing a date and a list of events.
 - `DropdownOption`: Represents an option in a dropdown menu.
 - `FormErrors`: Represents the errors in a form.
@@ -171,6 +187,7 @@ erDiagram
 ### Services
 
 - `eventService.ts`: A service that handles all API calls related to events.
+- `utils.ts`: A utility file containing helper functions for services, such as `camelToSnakeCase`.
 
 ### Helpers and Utilities
 

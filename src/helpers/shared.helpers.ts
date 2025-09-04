@@ -49,7 +49,7 @@ export const getCleanCalendarDays = (selectedMonth: string): InteractiveDay[] =>
     ...daysInMonth,
     ...Array(6 - lastDayIndex).fill(null),
   ].map((date) => ({
-    activities: [],
+    events: [],
     date: date ? date.toISOString() : null,
   }))
 }

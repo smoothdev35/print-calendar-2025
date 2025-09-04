@@ -1,131 +1,52 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { v4 as uuidv4 } from 'uuid'
-import { MONTHS } from '@/enums/shared.enums'
-import {
-  type Event,
-  type InteractiveDay,
-  type TMonths,
-  type NewEvent,
-} from '@/models/shared.models'
-import { getCleanCalendarDays } from '@/helpers/shared.helpers'
+import { type Event, type TMonths, type NewEvent } from '@/models/shared.models'
 import { currentMonth } from '@/lib/utils'
-import { createEvent as createEventAPI } from '@/services/eventService'
-
-type InteractiveMonth = {
-  month: TMonths
-  days: InteractiveDay[]
-}
+import { createEventService as createEventAPI } from '@/services/event.services'
 
 type CalendarState = {
   selectedMonth: TMonths
-  interactiveCalendar: InteractiveMonth[]
+  events: Event[]
   setSelectedMonth: (month: TMonths) => void
-  setInteractiveCalendar: (calendar: InteractiveMonth[]) => void
-  addEvent: (event: Event, selectedDate: string, selectedMonth: TMonths) => void
-  deleteEvent: (eventId: string, selectedMonth: TMonths) => void
-  createEvent: (event: NewEvent, selectedDate: string, selectedMonth: TMonths) => Promise<void>
+  setEvents: (events: Event[]) => void
+  addEvent: (event: Event) => void
+  updateEvent: (eventId: string, newEvent: Event) => void
+  deleteEvent: (eventId: string) => void
+  createEvent: (event: NewEvent) => Promise<void>
 }
 
 export const useCalendarStore = create<CalendarState>()(
   persist(
     (set, get) => ({
       selectedMonth: currentMonth,
-      interactiveCalendar: Object.values(MONTHS).map((month) => ({
-        month,
-        days: getCleanCalendarDays(month),
-      })),
+      events: [],
       setSelectedMonth: (month) => set({ selectedMonth: month }),
-      setInteractiveCalendar: (calendar) => set({ interactiveCalendar: calendar }),
-      addEvent: (event: Event, selectedDate: string, selectedMonth: TMonths) => {
+      setEvents: (events) => set({ events }),
+      addEvent: (event) => set((state) => ({ events: [...state.events, event] })),
+      updateEvent: (eventId, newEvent) =>
         set((state) => {
-          const monthIndex = state.interactiveCalendar.findIndex(
-            ({ month }) => month === selectedMonth
-          )
-
-          if (monthIndex === -1) return state
-
-          const dayIndex = state.interactiveCalendar[monthIndex].days.findIndex(
-            ({ date }) => date === selectedDate
-          )
-
-          if (dayIndex === -1) return state
-
-          const newInteractiveCalendar = [...state.interactiveCalendar]
-          const updatedDay = {
-            ...newInteractiveCalendar[monthIndex].days[dayIndex],
-            events: [...newInteractiveCalendar[monthIndex].days[dayIndex].events, event],
+          console.log('state events', state.events, 'newEvent', newEvent)
+          return {
+            events: state.events.map((e) => (e.id === eventId ? newEvent : e)),
           }
-
-          newInteractiveCalendar[monthIndex].days[dayIndex] = updatedDay
-
-          return { interactiveCalendar: newInteractiveCalendar }
-        })
-      },
-      deleteEvent: (eventId: string, selectedMonth: TMonths) => {
-        set((state) => {
-          const monthIndex = state.interactiveCalendar.findIndex(
-            ({ month }) => month === selectedMonth
-          )
-
-          if (monthIndex === -1) return state
-
-          const newInteractiveCalendar = [...state.interactiveCalendar]
-          const month = newInteractiveCalendar[monthIndex]
-
-          const dayIndex = month.days.findIndex((day) =>
-            day.events.some((event) => event.id === eventId)
-          )
-
-          if (dayIndex === -1) return state
-
-          const updatedDay = {
-            ...month.days[dayIndex],
-            events: month.days[dayIndex].events.filter((event) => event.id !== eventId),
-          }
-
-          newInteractiveCalendar[monthIndex].days[dayIndex] = updatedDay
-
-          return { interactiveCalendar: newInteractiveCalendar }
-        })
-      },
-      createEvent: async (event: NewEvent, selectedDate: string, selectedMonth: TMonths) => {
+        }),
+      deleteEvent: (eventId) =>
+        set((state) => ({
+          events: state.events.filter((e) => e.id !== eventId),
+        })),
+      createEvent: async (event: NewEvent) => {
         const tempId = uuidv4()
         const tempEvent: Event = { ...event, id: tempId }
 
-        get().addEvent(tempEvent, selectedDate, selectedMonth)
+        get().addEvent(tempEvent)
 
         try {
           const newEvent = await createEventAPI(event)
-          set((state) => {
-            const monthIndex = state.interactiveCalendar.findIndex(
-              ({ month }) => month === selectedMonth
-            )
-
-            if (monthIndex === -1) return state
-
-            const dayIndex = state.interactiveCalendar[monthIndex].days.findIndex(
-              ({ date }) => date === selectedDate
-            )
-
-            if (dayIndex === -1) return state
-
-            const newInteractiveCalendar = [...state.interactiveCalendar]
-            const updatedDay = {
-              ...newInteractiveCalendar[monthIndex].days[dayIndex],
-              events: newInteractiveCalendar[monthIndex].days[dayIndex].events.map((e) =>
-                e.id === tempId ? newEvent : e
-              ),
-            }
-
-            newInteractiveCalendar[monthIndex].days[dayIndex] = updatedDay
-
-            return { interactiveCalendar: newInteractiveCalendar }
-          })
+          get().updateEvent(tempId, newEvent)
         } catch (error) {
           console.error('Failed to create event:', error)
-          // Revert the optimistic update
-          get().deleteEvent(tempId, selectedMonth)
+          get().deleteEvent(tempId)
         }
       },
     }),
