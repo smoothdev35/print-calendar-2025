@@ -25,8 +25,20 @@ const ControlledDropdown = withDropdownController(Dropdown)
 
 const UpdateEventModal = ({ events, openAddEventModal, ...props }: UpdateEventModalProps) => {
   const { open, onOpenChange } = props
-  const { updateEvent } = useOptimisticEventUpdate()
-  const { deleteEvent } = useOptimisticEventDeletion()
+  const { updateEvent } = useOptimisticEventUpdate(
+    () => {
+      if (events.length === 1) {
+        onOpenChange()
+      }
+    }
+  )
+  const { deleteEvent } = useOptimisticEventDeletion(
+    () => {
+      if (fields.length === 1) {
+        onOpenChange()
+      }
+    }
+  )
 
   const { control, formState, handleSubmit, register, reset } = useForm<TUpdateEventForm>({
     defaultValues: {
@@ -61,8 +73,6 @@ const UpdateEventModal = ({ events, openAddEventModal, ...props }: UpdateEventMo
         updateEvent({ id: originalEvent.id, ...changedFields })
       }
     })
-
-    onOpenChange()
   }
 
   const handleDelete = (index: number) => {

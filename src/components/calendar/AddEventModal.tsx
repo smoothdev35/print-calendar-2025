@@ -22,7 +22,7 @@ const ControlledDropdown = withDropdownController(Dropdown)
 
 const AddEventModal = ({ activeDay, ...props }: AddEventModalProps) => {
   const { open, onOpenChange } = props
-  const { createEvent } = useOptimisticEventCreation()
+  const { createEvent } = useOptimisticEventCreation(onOpenChange)
 
   const { control, formState, handleSubmit, register, reset } = useForm<TAddEventForm>({
     defaultValues: {
@@ -48,7 +48,6 @@ const AddEventModal = ({ activeDay, ...props }: AddEventModalProps) => {
     }
 
     createEvent(newEvent)
-    onOpenChange()
   }
 
   useEffect(() => {

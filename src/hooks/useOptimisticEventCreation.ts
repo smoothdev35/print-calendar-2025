@@ -4,7 +4,7 @@ import { useCalendarStore } from '@/store/calendarStore'
 import { createEventService } from '@/services/event.services'
 import { type NewEvent, type Event } from '@/models/shared.models'
 
-export const useOptimisticEventCreation = () => {
+export const useOptimisticEventCreation = (onSuccess?: () => void, onError?: () => void) => {
   const { addEvent, updateEvent, deleteEvent } = useCalendarStore()
 
   const { mutate: createEvent } = useMutation({
@@ -19,11 +19,13 @@ export const useOptimisticEventCreation = () => {
       if (context) {
         updateEvent(context.tempId, newEvent)
       }
+      onSuccess?.()
     },
     onError: (_error, _variables, context) => {
       if (context) {
         deleteEvent(context.tempId)
       }
+      onError?.()
     },
   })
 

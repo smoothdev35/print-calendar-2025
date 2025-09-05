@@ -2,7 +2,7 @@ import { useMutation } from '@tanstack/react-query'
 import { useCalendarStore } from '@/store/calendarStore'
 import { deleteEventService } from '@/services/event.services'
 
-export const useOptimisticEventDeletion = () => {
+export const useOptimisticEventDeletion = (onSuccess?: () => void, onError?: () => void) => {
   const { events, addEvent, deleteEvent: deleteEventInStore } = useCalendarStore()
 
   const { mutate: deleteEvent } = useMutation({
@@ -20,6 +20,10 @@ export const useOptimisticEventDeletion = () => {
       if (context?.eventToDelete) {
         addEvent(context.eventToDelete)
       }
+      onError?.()
+    },
+    onSuccess: () => {
+      onSuccess?.()
     },
   })
 

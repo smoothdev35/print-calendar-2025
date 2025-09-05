@@ -82,8 +82,8 @@ Allows users to add new events to the calendar.
 5.  A temporary UUID is generated for the new event, and it is immediately added to the local `calendarStore`.
 6.  The `InteractiveCalendar` re-renders to display the new event (optimistic UI).
 7.  In the background, a `POST` request is sent to the server to save the event to the database.
-8.  Once the server responds with the permanent event data (including the database-generated `id`), the local `calendarStore` is updated with the permanent data.
-9.  If the server request fails, the temporary event is removed from the `calendarStore` and an error is displayed.
+8.  Once the server responds with the permanent event data (including the database-generated `id`), the local `calendarStore` is updated with the permanent data, and the `AddEventModal` closes.
+9.  If the server request fails, the temporary event is removed from the `calendarStore`, an error is displayed, and the `AddEventModal` remains open.
 
 ##### Flow Diagram
 
@@ -100,8 +100,10 @@ graph TD
     I --> J{Server saves event};
     J --> K{Server responds with permanent event};
     K --> L{Update local store with permanent event};
+    L --> O[AddEventModal closes];
     I --> M{Handle server error};
     M --> N{Remove temporary event from local store};
+    N --> B;
 ```
 
 #### Event Update
@@ -128,7 +130,8 @@ Allows users to edit existing events on the calendar.
 5.  The local `calendarStore` is immediately updated with the new event data (optimistic UI).
 6.  The `InteractiveCalendar` re-renders to display the updated event information.
 7.  In the background, a `PATCH` request is sent to the server to save the changes to the database.
-8.  If the server request fails, the original event data is restored in the `calendarStore`.
+8.  If the server request succeeds and there was only one event being updated, the `UpdateEventModal` closes. Otherwise, it remains open.
+9.  If the server request fails, the original event data is restored in the `calendarStore`, and the `UpdateEventModal` remains open.
 
 ##### Flow Diagram
 
@@ -143,8 +146,12 @@ graph TD
     F --> H{Send PATCH request to server};
     H --> I{Server updates event};
     I --> J{Handle server success};
-    H --> K{Handle server error};
-    K --> L{Restore original event in local store};
+    J --> K{Check if only one event};
+    K -- Yes --> L[UpdateEventModal closes];
+    K -- No --> B;
+    H --> M{Handle server error};
+    M --> N{Restore original event in local store};
+    N --> B;
 ```
 
 #### Event Deletion
@@ -168,7 +175,8 @@ Allows users to delete existing events from the calendar.
 3.  The event is immediately removed from the local `calendarStore` (optimistic UI).
 4.  The `UpdateEventModal` re-renders to remove the deleted event from the list.
 5.  In the background, a `DELETE` request is sent to the server to delete the event from the database.
-6.  If the server request fails, the deleted event is restored in the `calendarStore`.
+6.  If the server request succeeds and it was the last event for that day, the `UpdateEventModal` closes. Otherwise, it remains open.
+7.  If the server request fails, the deleted event is restored in the `calendarStore`, and the `UpdateEventModal` remains open.
 
 ##### Flow Diagram
 
@@ -180,8 +188,12 @@ graph TD
     C --> E{Send DELETE request to server};
     E --> F{Server deletes event};
     F --> G{Handle server success};
-    E --> H{Handle server error};
-    H --> I{Restore deleted event in local store};
+    G --> H{Check if last event};
+    H -- Yes --> I[UpdateEventModal closes];
+    H -- No --> D;
+    E --> J{Handle server error};
+    J --> K{Restore deleted event in local store};
+    K --> D;
 ```
 
 ### Calendar Navigation
