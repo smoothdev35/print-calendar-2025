@@ -91,7 +91,9 @@ export const InteractiveCalendar = () => {
                 className={`p-2 border rounded-md border-1 border-[rgba(0,0,0,.25)] aspect-[4/3] ${
                   checkForValidDate(date) ? 'cursor-pointer' : 'bg-gray-100'
                 }`}
-                onClick={events.length > 0 ? toggleUpdateEventDialog(date) : toggleAddEventDialog(date)}
+                onClick={
+                  events.length > 0 ? toggleUpdateEventDialog(date) : toggleAddEventDialog(date)
+                }
               >
                 {checkForValidDate(date) ? (
                   <article className="flex flex-col justify-between h-full relative">
@@ -142,7 +144,12 @@ export const InteractiveCalendar = () => {
         <UpdateEventModal
           open={updateEventDialogOpen}
           onOpenChange={toggleUpdateEventDialog(null)}
-          events={events.filter((event) => new Date(event.startTime).toDateString() === new Date(activeDay).toDateString()) as Event[]}
+          events={
+            events.filter(
+              (event) =>
+                new Date(event.startTime).toDateString() === new Date(activeDay).toDateString()
+            ) as Event[]
+          }
           openAddEventModal={openAddEventModal}
         />
       )}

@@ -30,15 +30,15 @@ const UpdateEventModal = ({ events, openAddEventModal, ...props }: UpdateEventMo
 
   const { control, formState, handleSubmit, register, reset } = useForm<TUpdateEventForm>({
     defaultValues: {
-      events: events.map(event => ({ emoji: event.emoji, text: event.title }))
+      events: events.map((event) => ({ emoji: event.emoji, text: event.title })),
     },
     resolver: customResolver,
   })
 
   const { fields, remove } = useFieldArray({
     control,
-    name: "events",
-  });
+    name: 'events',
+  })
 
   const { isValid } = formState
 
@@ -74,13 +74,16 @@ const UpdateEventModal = ({ events, openAddEventModal, ...props }: UpdateEventMo
   useEffect(() => {
     if (open) {
       reset({
-        events: events.map(event => ({ emoji: event.emoji, text: event.title }))
+        events: events.map((event) => ({ emoji: event.emoji, text: event.title })),
       })
     }
   }, [open, reset, events])
 
   return (
-    <Modal {...props} title={`Edit information about the ${events.length > 1 ? 'events' : 'event'}`}>
+    <Modal
+      {...props}
+      title={`Edit information about the ${events.length > 1 ? 'events' : 'event'}`}
+    >
       <form className="flex flex-wrap gap-6 mt-4" onSubmit={handleSubmit(submitHandler)}>
         {fields.map((field, index) => (
           <div key={field.id} className="flex gap-4 w-full items-center">
@@ -90,7 +93,11 @@ const UpdateEventModal = ({ events, openAddEventModal, ...props }: UpdateEventMo
               name={`events.${index}.emoji`}
               options={emojisDropdownOptions}
             />
-            <Input {...register(`events.${index}.text`)} className="w-full" placeholder="Enter text" />
+            <Input
+              {...register(`events.${index}.text`)}
+              className="w-full"
+              placeholder="Enter text"
+            />
             <Button variant="ghost" size="icon" onClick={() => handleDelete(index)}>
               <Trash2 className="h-4 w-4" />
             </Button>

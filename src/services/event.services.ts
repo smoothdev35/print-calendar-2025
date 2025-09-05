@@ -21,17 +21,17 @@ export const createEventService = async (event: NewEvent): Promise<Event> => {
   }
 }
 
-export const updateEventService = async (event: Partial<Event> & { id: string }): Promise<Event> => {
+export const updateEventService = async (
+  event: Partial<Event> & { id: string }
+): Promise<Event> => {
   try {
     const { id, ...rest } = event
     const snakeCaseEvent = camelToSnakeCase<Omit<Partial<Event>, 'id'>, UpdateEventRequest>(rest)
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/events?id=eq.${id}`,
-      {
-        method: 'PATCH',
-        body: JSON.stringify(snakeCaseEvent),
-        ...getBaseFetchHeaders(),
-      }
-    )
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/events?id=eq.${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(snakeCaseEvent),
+      ...getBaseFetchHeaders(),
+    })
     if (!response.ok) {
       throw new Error('Failed to update event')
     }
@@ -45,12 +45,10 @@ export const updateEventService = async (event: Partial<Event> & { id: string })
 
 export const deleteEventService = async (eventId: string): Promise<void> => {
   try {
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/events?id=eq.${eventId}`,
-      {
-        method: 'DELETE',
-        ...getBaseFetchHeaders(),
-      }
-    )
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/events?id=eq.${eventId}`, {
+      method: 'DELETE',
+      ...getBaseFetchHeaders(),
+    })
     if (!response.ok) {
       throw new Error('Failed to delete event')
     }
