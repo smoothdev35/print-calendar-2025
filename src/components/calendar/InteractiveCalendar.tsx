@@ -7,10 +7,13 @@ import {
 } from '@/helpers/shared.helpers'
 import { useCalendarStore } from '@/store/calendarStore'
 import { AddEventModal } from './AddEventModal'
+import { UpdateEventModal } from './UpdateEventModal'
+import { type Event } from '@/models/shared.models'
 
 type CalendarScreenState = {
   activeDay: string | null
   addEventDialogOpen: boolean
+  updateEventDialogOpen: boolean
 }
 
 export const InteractiveCalendar = () => {
@@ -32,9 +35,10 @@ export const InteractiveCalendar = () => {
   const [state, setState] = useState<CalendarScreenState>({
     activeDay: null,
     addEventDialogOpen: false,
+    updateEventDialogOpen: false,
   })
 
-  const { activeDay, addEventDialogOpen } = state
+  const { activeDay, addEventDialogOpen, updateEventDialogOpen } = state
 
   const updateCalendarState = immutableStateUpdateFactory<CalendarScreenState>(setState)
 
@@ -43,6 +47,18 @@ export const InteractiveCalendar = () => {
       activeDay: addEventDialogOpen ? null : date,
       addEventDialogOpen: !addEventDialogOpen,
     })
+  }
+
+  const toggleUpdateEventDialog = (date: string | null) => () => {
+    updateCalendarState({
+      activeDay: updateEventDialogOpen ? null : date,
+      updateEventDialogOpen: !updateEventDialogOpen,
+    })
+  }
+
+  const openAddEventModal = () => {
+    toggleUpdateEventDialog(null)()
+    toggleAddEventDialog(activeDay)()
   }
 
   if (!interactiveCalendarDays) return null
@@ -75,7 +91,7 @@ export const InteractiveCalendar = () => {
                 className={`p-2 border rounded-md border-1 border-[rgba(0,0,0,.25)] aspect-[4/3] ${
                   checkForValidDate(date) ? 'cursor-pointer' : 'bg-gray-100'
                 }`}
-                onClick={toggleAddEventDialog(date)}
+                onClick={events.length > 0 ? toggleUpdateEventDialog(date) : toggleAddEventDialog(date)}
               >
                 {checkForValidDate(date) ? (
                   <article className="flex flex-col justify-between h-full relative">
@@ -122,6 +138,14 @@ export const InteractiveCalendar = () => {
         onOpenChange={toggleAddEventDialog(null)}
         activeDay={activeDay}
       />
+      {activeDay && (
+        <UpdateEventModal
+          open={updateEventDialogOpen}
+          onOpenChange={toggleUpdateEventDialog(null)}
+          events={events.filter((event) => new Date(event.startTime).toDateString() === new Date(activeDay).toDateString()) as Event[]}
+          openAddEventModal={openAddEventModal}
+        />
+      )}
     </>
   )
 }

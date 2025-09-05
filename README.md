@@ -5,7 +5,7 @@ This template provides a minimal setup to get React working in Vite with HMR and
 Currently, two official plugins are available:
 
 - [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](httpss://swc.rs/) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
 ## Expanding the ESLint configuration
 
@@ -53,25 +53,27 @@ export default tseslint.config({
 
 ### Event Management
 
-#### Purpose
+#### Event Creation
 
-Allows users to add, view, and delete events on the calendar.
+##### Purpose
 
-#### Components
+Allows users to add new events to the calendar.
+
+##### Components
 
 - `CalendarScreen.tsx`: The main screen that orchestrates the feature.
 - `InteractiveCalendar.tsx`: The component that displays the calendar grid and the events.
 - `AddEventModal.tsx`: The modal form for adding new events.
 
-#### State Management
+##### State Management
 
 - `calendarStore.tsx`: The Zustand store that manages the events data. It now includes a `createEvent` function that handles the optimistic UI flow.
 
-#### Custom Hooks
+##### Custom Hooks
 
 - `useOptimisticEventCreation.ts`: A custom hook that encapsulates the logic for optimistic event creation.
 
-#### User Interaction Flow
+##### User Interaction Flow
 
 1.  User clicks on a day in the `InteractiveCalendar`.
 2.  The `AddEventModal` opens.
@@ -83,7 +85,7 @@ Allows users to add, view, and delete events on the calendar.
 8.  Once the server responds with the permanent event data (including the database-generated `id`), the local `calendarStore` is updated with the permanent data.
 9.  If the server request fails, the temporary event is removed from the `calendarStore` and an error is displayed.
 
-#### Flow Diagram
+##### Flow Diagram
 
 ```mermaid
 graph TD
@@ -100,6 +102,86 @@ graph TD
     K --> L{Update local store with permanent event};
     I --> M{Handle server error};
     M --> N{Remove temporary event from local store};
+```
+
+#### Event Update
+
+##### Purpose
+
+Allows users to edit existing events on the calendar.
+
+##### Components
+
+- `InteractiveCalendar.tsx`: The component that displays the calendar grid and the events.
+- `UpdateEventModal.tsx`: The modal form for editing existing events.
+
+##### Custom Hooks
+
+- `useOptimisticEventUpdate.ts`: A custom hook that encapsulates the logic for optimistic event updates.
+
+##### User Interaction Flow
+
+1.  User clicks on a day with existing events in the `InteractiveCalendar`.
+2.  The `UpdateEventModal` opens, displaying the details of the events for that day.
+3.  User edits the event details and clicks "Update".
+4.  The `useOptimisticEventUpdate` hook is called for each modified event.
+5.  The local `calendarStore` is immediately updated with the new event data (optimistic UI).
+6.  The `InteractiveCalendar` re-renders to display the updated event information.
+7.  In the background, a `PATCH` request is sent to the server to save the changes to the database.
+8.  If the server request fails, the original event data is restored in the `calendarStore`.
+
+##### Flow Diagram
+
+```mermaid
+graph TD
+    A[User clicks on a day with events] --> B{UpdateEventModal opens};
+    B --> C{User edits form};
+    C --> D[User clicks 'Update'];
+    D --> E{useOptimisticEventUpdate hook called for each modified event};
+    E --> F{Update event in local store};
+    F --> G[InteractiveCalendar re-renders];
+    F --> H{Send PATCH request to server};
+    H --> I{Server updates event};
+    I --> J{Handle server success};
+    H --> K{Handle server error};
+    K --> L{Restore original event in local store};
+```
+
+#### Event Deletion
+
+##### Purpose
+
+Allows users to delete existing events from the calendar.
+
+##### Components
+
+- `UpdateEventModal.tsx`: The modal form where the delete option is present.
+
+##### Custom Hooks
+
+- `useOptimisticEventDeletion.ts`: A custom hook that encapsulates the logic for optimistic event deletion.
+
+##### User Interaction Flow
+
+1.  User clicks on the delete icon next to an event in the `UpdateEventModal`.
+2.  The `useOptimisticEventDeletion` hook is called.
+3.  The event is immediately removed from the local `calendarStore` (optimistic UI).
+4.  The `UpdateEventModal` re-renders to remove the deleted event from the list.
+5.  In the background, a `DELETE` request is sent to the server to delete the event from the database.
+6.  If the server request fails, the deleted event is restored in the `calendarStore`.
+
+##### Flow Diagram
+
+```mermaid
+graph TD
+    A[User clicks delete icon] --> B{useOptimisticEventDeletion hook called};
+    B --> C{Remove event from local store};
+    C --> D[UpdateEventModal re-renders];
+    C --> E{Send DELETE request to server};
+    E --> F{Server deletes event};
+    F --> G{Handle server success};
+    E --> H{Handle server error};
+    H --> I{Restore deleted event in local store};
 ```
 
 ### Calendar Navigation

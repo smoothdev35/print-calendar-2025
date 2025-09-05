@@ -9,3 +9,5 @@ export interface NewEventRequest {
 export interface EventResponse extends NewEventRequest {
   id: string
 }
+
+export type UpdateEventRequest = Partial<NewEventRequest>
