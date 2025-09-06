@@ -51,6 +51,48 @@ export default tseslint.config({
 
 ## Features
 
+### Error Handling
+
+The application uses a centralized error modal to display errors to the user.
+
+#### Components
+
+- `ErrorModal.tsx`: A reusable modal component for displaying error messages.
+- `errorStore.tsx`: A Zustand store that manages the state of the error modal (e.g., whether it's open, the title, and the description).
+
+#### Custom Hooks
+
+- `useErrorStore.ts`: A hook that provides access to the error store and the `showError` and `hideError` functions.
+
+#### Usage
+
+To display an error, import the `useErrorStore` hook and call the `showError` function:
+
+`
+import { useErrorStore } from '@/store/errorStore';
+
+const { showError } = useErrorStore();
+
+// To display an error:
+showError('Error Title', 'An unexpected error occurred.');
+`
+
+This system is used in the optimistic update hooks (`useOptimisticEventCreation.ts`, `useOptimisticEventUpdate.ts`, `useOptimisticEventDeletion.ts`) to display errors that occur during API calls.
+
+### Form Handling
+
+The forms in this application follow a standardized approach using the following libraries:
+
+- **`react-hook-form`**: For managing form state and validation.
+- **`zod`**: For defining validation schemas.
+- **`@hookform/resolvers/zod`**: To use Zod schemas with `react-hook-form`.
+
+The implementation strategy is as follows:
+
+1.  **Zod Schema**: A Zod schema is defined for each form to specify the validation rules.
+2.  **Type Inference**: The form's data type is inferred from the Zod schema using `z.infer`.
+3.  **`withController` HOC**: A single, generic Higher-Order Component, `withController`, is used to wrap all form input components. This HOC connects the input to the `react-hook-form` state, and it also handles the display of the label and validation errors.
+
 ### Event Management
 
 #### Event Creation
@@ -102,7 +144,8 @@ graph TD
     K --> L{Update local store with permanent event};
     L --> O[AddEventModal closes];
     I --> M{Handle server error};
-    M --> N{Remove temporary event from local store};
+    M --> ShowErrorModal[Show centralized error modal];
+    ShowErrorModal --> N{Remove temporary event from local store};
     N --> B;
 ```
 
@@ -150,7 +193,8 @@ graph TD
     K -- Yes --> L[UpdateEventModal closes];
     K -- No --> B;
     H --> M{Handle server error};
-    M --> N{Restore original event in local store};
+    M --> ShowErrorModal[Show centralized error modal];
+    ShowErrorModal --> N{Restore original event in local store};
     N --> B;
 ```
 
@@ -192,7 +236,8 @@ graph TD
     H -- Yes --> I[UpdateEventModal closes];
     H -- No --> D;
     E --> J{Handle server error};
-    J --> K{Restore deleted event in local store};
+    J --> ShowErrorModal[Show centralized error modal];
+    ShowErrorModal --> K{Restore deleted event in local store};
     K --> D;
 ```
 
@@ -290,7 +335,6 @@ erDiagram
 - `checkForValidDate`: Checks if a given date string is a valid date.
 - `immutableStateUpdateFactory`: A factory function that returns a function that updates the state of a component in an immutable way.
 - `getCleanCalendarDays`: Returns an array of `InteractiveDay` objects for a given month.
-- `customResolver`: A custom resolver for `react-hook-form` that validates that all fields are filled.
 - `monthsDropdownOptions`: An array of `DropdownOption` objects for the months of the year.
 - `emojisDropdownOptions`: An array of `DropdownOption` objects for the available emojis.
 - `currentMonth`: The current month as a string.
@@ -302,4 +346,4 @@ erDiagram
 
 ### Higher-Order Components (HOCs)
 
-- `withDropdownController`: A HOC that connects a `Dropdown` component to a `react-hook-form` controller.
+- `withController`: A generic HOC that connects any form input component to `react-hook-form`. It uses the `Controller` component from `react-hook-form` to handle the connection, and it also displays a label and validation errors.

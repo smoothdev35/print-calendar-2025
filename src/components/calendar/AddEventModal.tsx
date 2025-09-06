@@ -1,9 +1,11 @@
 import { useEffect } from 'react'
-import { type FieldValues, useForm } from 'react-hook-form'
-import { type TextAndIcon, type NewEvent } from '@/models/shared.models'
-import { withDropdownController } from '@/lib/hocs/withDropdownController'
+import { useForm } from 'react-hook-form'
+import type z from 'zod'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { type NewEvent } from '@/models/shared.models'
+import { withController } from '@/lib/hocs/withController'
 import { emojisDropdownOptions } from '@/lib/utils'
-import { customResolver } from '@/helpers/shared.helpers'
+import { addEventSchema } from '@/utils/schemas'
 import { useOptimisticEventCreation } from '@/hooks/useOptimisticEventCreation'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
@@ -16,35 +18,34 @@ type AddEventModalProps = {
   activeDay: string | null
 }
 
-type TAddEventForm = TextAndIcon
+export type TAddEventForm = z.infer<typeof addEventSchema>
 
-const ControlledDropdown = withDropdownController(Dropdown)
+const ControlledInput = withController(Input)
+const ControlledDropdown = withController(Dropdown)
 
 const AddEventModal = ({ activeDay, ...props }: AddEventModalProps) => {
   const { open, onOpenChange } = props
   const { createEvent } = useOptimisticEventCreation(onOpenChange)
 
-  const { control, formState, handleSubmit, register, reset } = useForm<TAddEventForm>({
+  const { control, formState, handleSubmit, reset } = useForm<TAddEventForm>({
     defaultValues: {
       emoji: '🎂',
       text: '',
     },
-    resolver: customResolver,
+    resolver: zodResolver(addEventSchema),
   })
 
   const { isValid } = formState
 
-  const submitHandler = (data: FieldValues) => {
-    const { emoji, text } = data as TextAndIcon
-
+  const submitHandler = (data: TAddEventForm) => {
     if (!activeDay) return
 
     const newEvent: NewEvent = {
-      title: text,
+      title: data.text,
       description: '',
       startTime: new Date(activeDay).toISOString(),
       endTime: new Date(activeDay).toISOString(),
-      emoji,
+      emoji: data.emoji,
     }
 
     createEvent(newEvent)
@@ -59,12 +60,19 @@ const AddEventModal = ({ activeDay, ...props }: AddEventModalProps) => {
       <form className="flex flex-wrap gap-6 mt-4" onSubmit={handleSubmit(submitHandler)}>
         <div className="flex gap-4 w-full">
           <ControlledDropdown
+            label="Emoji"
             className="w-[75px]"
             control={control}
             name="emoji"
             options={emojisDropdownOptions}
           />
-          <Input {...register('text')} className="w-full" placeholder="Enter text" />
+          <ControlledInput
+            label="Text"
+            control={control}
+            name="text"
+            className="w-full"
+            placeholder="Enter text"
+          />
         </div>
         <Button type="submit" className="w-full" disabled={!isValid}>
           Add information

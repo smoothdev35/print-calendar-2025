@@ -1,10 +1,12 @@
 import { useEffect } from 'react'
-import { type FieldValues, useForm, useFieldArray } from 'react-hook-form'
+import { useForm, useFieldArray } from 'react-hook-form'
+import type z  from 'zod'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { Trash2 } from 'lucide-react'
-import { type TextAndIcon, type Event } from '@/models/shared.models'
-import { withDropdownController } from '@/lib/hocs/withDropdownController'
+import { type Event } from '@/models/shared.models'
+import { withController } from '@/lib/hocs/withController'
 import { emojisDropdownOptions } from '@/lib/utils'
-import { customResolver } from '@/helpers/shared.helpers'
+import { updateEventSchema } from '@/utils/schemas'
 import { useOptimisticEventUpdate } from '@/hooks/useOptimisticEventUpdate'
 import { useOptimisticEventDeletion } from '@/hooks/useOptimisticEventDeletion'
 import { Button } from '../ui/button'
@@ -19,9 +21,10 @@ type UpdateEventModalProps = {
   openAddEventModal: () => void
 }
 
-type TUpdateEventForm = { events: TextAndIcon[] }
+export type TUpdateEventForm = z.infer<typeof updateEventSchema>
 
-const ControlledDropdown = withDropdownController(Dropdown)
+const ControlledInput = withController(Input)
+const ControlledDropdown = withController(Dropdown)
 
 const UpdateEventModal = ({ events, openAddEventModal, ...props }: UpdateEventModalProps) => {
   const { open, onOpenChange } = props
@@ -34,17 +37,17 @@ const UpdateEventModal = ({ events, openAddEventModal, ...props }: UpdateEventMo
   )
   const { deleteEvent } = useOptimisticEventDeletion(
     () => {
-      if (fields.length === 1) {
+      if (fields.length === 0) {
         onOpenChange()
       }
     }
   )
 
-  const { control, formState, handleSubmit, register, reset } = useForm<TUpdateEventForm>({
+  const { control, formState, handleSubmit, reset } = useForm<TUpdateEventForm>({
     defaultValues: {
       events: events.map((event) => ({ emoji: event.emoji, text: event.title })),
     },
-    resolver: customResolver,
+    resolver: zodResolver(updateEventSchema),
   })
 
   const { fields, remove } = useFieldArray({
@@ -54,10 +57,8 @@ const UpdateEventModal = ({ events, openAddEventModal, ...props }: UpdateEventMo
 
   const { isValid } = formState
 
-  const submitHandler = (data: FieldValues) => {
-    const { events: formEvents } = data as { events: TextAndIcon[] }
-
-    formEvents.forEach((formEvent, index) => {
+  const submitHandler = (data: TUpdateEventForm) => {
+    data.events.forEach((formEvent, index) => {
       const originalEvent = events[index]
       const changedFields: Partial<Event> = {}
 
@@ -98,13 +99,16 @@ const UpdateEventModal = ({ events, openAddEventModal, ...props }: UpdateEventMo
         {fields.map((field, index) => (
           <div key={field.id} className="flex gap-4 w-full items-center">
             <ControlledDropdown
+              label="Emoji"
               className="w-[75px]"
               control={control}
               name={`events.${index}.emoji`}
               options={emojisDropdownOptions}
             />
-            <Input
-              {...register(`events.${index}.text`)}
+            <ControlledInput
+              label="Text"
+              control={control}
+              name={`events.${index}.text`}
               className="w-full"
               placeholder="Enter text"
             />

@@ -24,17 +24,6 @@ export const useCalendarStore = create<CalendarState>()(
       setSelectedMonth: (month) => set({ selectedMonth: month }),
       setEvents: (events) => set({ events }),
       addEvent: (event) => set((state) => ({ events: [...state.events, event] })),
-      updateEvent: (eventId, newEvent) =>
-        set((state) => {
-          console.log('state events', state.events, 'newEvent', newEvent)
-          return {
-            events: state.events.map((e) => (e.id === eventId ? newEvent : e)),
-          }
-        }),
-      deleteEvent: (eventId) =>
-        set((state) => ({
-          events: state.events.filter((e) => e.id !== eventId),
-        })),
       createEvent: async (event: NewEvent) => {
         const tempId = uuidv4()
         const tempEvent: Event = { ...event, id: tempId }
@@ -49,6 +38,18 @@ export const useCalendarStore = create<CalendarState>()(
           get().deleteEvent(tempId)
         }
       },
+      updateEvent: (eventId, newEvent) =>
+        set((state) => {
+          console.log('state events', state.events, 'newEvent', newEvent)
+          return {
+            events: state.events.map((e) => (e.id === eventId ? newEvent : e)),
+          }
+        }),
+      deleteEvent: (eventId) =>
+        set((state) => ({
+          events: state.events.filter((e) => e.id !== eventId),
+        })),
+
     }),
     {
       name: 'calendar-store',
